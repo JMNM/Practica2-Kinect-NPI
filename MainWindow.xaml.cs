@@ -357,7 +357,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                                     movimientos.Empezar(skel, dc, sensor);
 
                                 }*/
-                                //Rec.dibujar(skel, dc, sensor);
+                                Rec.dibujar(skel, dc, sensor);
                             }
 
                             //Dibujamos las articulaciones del esqueleto.
