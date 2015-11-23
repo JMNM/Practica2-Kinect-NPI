@@ -1,0 +1,74 @@
+﻿<Window x:Class="Microsoft.Samples.Kinect.ColorBasics.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Color Basics" Height="769" Width="851" Loaded="WindowLoaded" Closing="WindowClosing">
+
+
+    <Window.Resources>
+
+        <SolidColorBrush x:Key="MediumGreyBrush" Color="#ff6e6e6e"/>
+        <SolidColorBrush x:Key="KinectPurpleBrush" Color="#ff52318f"/>
+        <SolidColorBrush x:Key="KinectBlueBrush" Color="#ff00BCF2"/>
+        <Style TargetType="{x:Type Image}">
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+        </Style>
+        <Style TargetType="{x:Type Button}" x:Key="SnapshotButton" >
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal" Background="Transparent">
+                                <TextBlock x:Name="SnapText" Text="{TemplateBinding Content}" TextAlignment="Left"  VerticalAlignment="Center" Foreground="{StaticResource KinectPurpleBrush}" FontSize="15" />
+                                <Grid Margin="9,0,0,0">
+                                    <Image x:Name="SnapNormal" Source="Images\SnapNormal.png" Stretch="None" HorizontalAlignment="Center"/>
+                                    <Image x:Name="SnapHover" Source="Images\SnapHover.png" Stretch="None" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Visibility" Value="Collapsed" TargetName="SnapNormal"/>
+                                <Setter Property="Visibility" Value="Visible" TargetName="SnapHover"/>
+                                <Setter Property="Foreground" Value="{StaticResource KinectBlueBrush}" TargetName="SnapText"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Name="layoutGrid" Margin="10,0,10,-21">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" MinHeight="68"/>
+            <RowDefinition Height="73*"/>
+            <RowDefinition Height="271*"/>
+            <RowDefinition Height="253*"/>
+            <RowDefinition Height="Auto" MinHeight="66"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="0"/>
+        </Grid.RowDefinitions>
+        <DockPanel Grid.Row="0" Margin="0 0 0 20">
+            <TextBlock DockPanel.Dock="Right" Margin="0 0 -1 0" VerticalAlignment="Bottom" Foreground="{StaticResource MediumGreyBrush}" FontFamily="Segoe UI" FontSize="18"><Run Text="Práctica 1"/><LineBreak/><Run/></TextBlock>
+        </DockPanel>
+        <Viewbox Grid.Row="1" Stretch="Uniform" HorizontalAlignment="Center" Grid.RowSpan="3" Margin="44,0,43,0" Width="736">
+            <Image Name="Image" Width="640" Height="480" RenderTransformOrigin="0.567,0.502"/>
+        </Viewbox>
+        <StatusBar Grid.Row="4" HorizontalAlignment="Stretch" Name="statusBar" VerticalAlignment="Bottom" Background="White" Foreground="{StaticResource MediumGreyBrush}" Height="26" Margin="248,0,137,0">
+            <StatusBarItem Padding="0 0 0 10" Width="312">
+                <TextBlock Name="statusBarText" Margin="-1 0 0 0"></TextBlock>
+            </StatusBarItem>
+        </StatusBar>
+
+        <DockPanel HorizontalAlignment="Left" LastChildFill="False" Grid.RowSpan="3" VerticalAlignment="Stretch" Width="142" Grid.Row="1" Margin="0,0,0,190">
+            <Image x:Name="pi1" Source="Images\posini.png" Stretch="None" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20,-110,0,5" Visibility="Hidden" Width="98"/>
+            <Image x:Name="mov1" Source="Images\mov1.png" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-100,-10,0,5" Visibility="Hidden" Width="138"/>
+            <Image x:Name="mov2" Source="Images\mov2.png" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-140,-110,0,5" Visibility="Hidden" Width="138"/>
+            <TextBlock x:Name="textoAyuda" DockPanel.Dock="Left" Margin="-100 0 -1 0" VerticalAlignment="Top" HorizontalAlignment="Left" Foreground="{StaticResource MediumGreyBrush}" FontFamily="Segoe UI" FontSize="18" Width="150" RenderTransformOrigin="-0.34,5.5"><Run Text=""/></TextBlock>
+        </DockPanel>
+        <Slider x:Name="mError" Value="15" ValueChanged="mError_ValueChanged" HorizontalAlignment="Left" Margin="10,41,0,0" Grid.Row="4" VerticalAlignment="Top" Width="217" Maximum="25" Minimum="5" Height="18"/>
+        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Height="37" Margin="10,3,0,0" Grid.Row="4" TextWrapping="Wrap" VerticalAlignment="Top" Width="217"><Run Text="Margen de error"/><Run Text=" (m):"/><LineBreak/><Run Text="0.05&#x9;&#x9;0.15&#x9;&#x9;0.25&#x9;"/></TextBlock>
+
+
+    </Grid>
+</Window>
