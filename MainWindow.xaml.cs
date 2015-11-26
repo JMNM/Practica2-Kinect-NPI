@@ -136,7 +136,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 			/// Inicializamos los componentes, tanto los de la interfaz gráfica como los del movimiento a realizar.
 			/// </summary>
             movimientos = new Mov(this);
-            Rec = new RectMov(0,0,2.7F);
+            Rec = new RectMov(0,0);
             InitializeComponent();
             
         }
@@ -322,10 +322,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             using (DrawingContext dc = this.drawingGroup.Open())
             {
                 // Dibuja lo que contenga colorBitmap con el tamaño especificado
-
-                //dc.DrawImage(this.colorBitmap, new Rect(0.0, 0.0, RenderWidth, RenderHeight));
+                dc.DrawImage(this.colorBitmap, new Rect(0.0, 0.0, RenderWidth, RenderHeight));
                 //CroppedBitmap l = new CroppedBitmap(colorBitmap,new Int32Rect(0, 0, (int)RenderWidth / 2, (int)RenderHeight / 2));
-                //dc.DrawImage(l, new Rect(0.0, 0.0, RenderWidth, RenderHeight));
+                //dc.DrawImage(l, new Rect(0.0, 0.0, RenderWidth/2, RenderHeight/2));
                 //System.Drawing.Image i = new System.Drawing.Bitmap(@"Images/img1.jpg");
                 //ImageSourceConverter a = new ImageSourceConverter();
                 //dc.DrawImage((ImageSource)a.ConvertFrom(i), new Rect(0.0, 0.0, RenderWidth, RenderHeight));
@@ -608,13 +607,12 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                         {
                             if (action == "released")
                             {
-                                Rec.soltar();
+                                Rec.soltar(handSide);
                                 trackedBonePen2.Brush = Brushes.Green;
                             }
                             else
                             {
-                                Rec.soltar();
-                                Rec.coger();
+                                Rec.coger(handSide);
                                 trackedBonePen2.Brush = Brushes.Red;
                             }
                         }
@@ -622,13 +620,12 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                         {
                             if (action == "released")
                             {
-                                Rec.soltar();
+                                Rec.soltar(handSide);
                                 trackedBonePen1.Brush = Brushes.Blue;
                             }
                             else
                             {
-                                Rec.soltar();
-                                Rec.coger();
+                                Rec.coger(handSide);
                                 trackedBonePen1.Brush = Brushes.Yellow;
                             }
                         }

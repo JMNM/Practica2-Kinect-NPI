@@ -9,7 +9,7 @@
 
     class RectMov
     {
-        private Point3D pos;
+        private Point pos;
         private int alto;
         private int ancho;
         private Boolean cogidoI;
@@ -21,9 +21,9 @@
         /// Sensor de kinect, será pasado por parámetros al necesitarlo
         /// </summary>
         private KinectSensor sensor;
-        public RectMov(float x, float y, float z)
+        public RectMov(float x, float y)
         {
-            pos = new Point3D(x, y, z);
+            pos = new Point(x, y);
             ancho = 100;
             alto = 100;
             cogidoD = false;
@@ -31,26 +31,30 @@
         }
         public RectMov(float x, float y, float z, Boolean cogD,Boolean cogI)
         {
-            pos = new Point3D(x, y, z);
-            ancho = 10;
-            alto = 10;
+            pos = new Point(x, y);
+            ancho = 100;
+            alto = 100;
             cogidoD = cogD;
             cogidoI = cogI;
         }
-        public void coger() {
+        public void coger(String mano) {
             if (sk != null)
             {
-                if (sk.Joints[JointType.HandRight].Position.X >= pos.X && sk.Joints[JointType.HandRight].Position.X <= pos.X + ancho
-                    && sk.Joints[JointType.HandRight].Position.Y <= pos.Y + alto&& sk.Joints[JointType.HandRight].Position.Y >= pos.Y - alto &&
-                     !cogidoD)
+                Point3D md = new Point3D(sk.Joints[JointType.HandRight].Position.X, sk.Joints[JointType.HandRight].Position.Y, sk.Joints[JointType.HandRight].Position.Z);
+                Point md2d = Point3DToScreen(md);
+                Point3D mi = new Point3D(sk.Joints[JointType.HandLeft].Position.X, sk.Joints[JointType.HandLeft].Position.Y, sk.Joints[JointType.HandLeft].Position.Z);
+                Point mi2d = Point3DToScreen(mi);
+                if (md2d.X >= pos.X && md2d.X <= pos.X + ancho
+                    && md2d.Y <= pos.Y + alto && md2d.Y >= pos.Y  &&
+                     !cogidoI && mano=="right")
                 {
                     cogidoD = true;
                     cogidoI = false;
 
                 }
-                else if (sk.Joints[JointType.HandLeft].Position.X >= pos.X - ancho / 2 && sk.Joints[JointType.HandLeft].Position.X <= pos.X + ancho / 2
-                    && sk.Joints[JointType.HandLeft].Position.Y <= pos.Y + alto / 2 && sk.Joints[JointType.HandLeft].Position.Y >= pos.Y - alto / 2 &&
-                     !cogidoI)
+                else if (mi2d.X >= pos.X - ancho / 2 && mi2d.X <= pos.X + ancho / 2
+                    && mi2d.Y <= pos.Y + alto / 2 && mi2d.Y >= pos.Y - alto / 2 &&
+                     !cogidoD && mano =="left")
                 {
                     cogidoI = true;
                     cogidoD = false;
@@ -60,11 +64,12 @@
 
         }
 
-        public void soltar()
+        public void soltar(String mano)
         {
-
-            cogidoD = false;
-            cogidoI = false;
+            if(mano=="right")
+                cogidoD = false;
+            else if(mano=="left")
+                cogidoI = false;
 
         }
         public void dibujar(Skeleton skel, DrawingContext dc, KinectSensor se)
@@ -74,22 +79,18 @@
             sk = skel;
             if (cogidoI)
             {
-                pos.X = skel.Joints[JointType.HandLeft].Position.X;
-                pos.Y = skel.Joints[JointType.HandLeft].Position.Y;
-                pos.Z = skel.Joints[JointType.HandLeft].Position.Z;
-                dc.DrawRectangle(null, new Pen(Brushes.Red, 3), new Rect(Point3DToScreen(pos).X - ancho / 2, Point3DToScreen(pos).Y - alto / 2, alto, ancho));
+                pos = Point3DToScreen(new Point3D(skel.Joints[JointType.HandLeft].Position.X, skel.Joints[JointType.HandLeft].Position.Y, skel.Joints[JointType.HandLeft].Position.Z));
+                dc.DrawRectangle(null, new Pen(Brushes.Red, 3), new Rect(pos.X - ancho / 2, pos.Y - alto / 2, alto, ancho));
                 
             }
             else if (cogidoD) {
-                pos.X = skel.Joints[JointType.HandRight].Position.X;
-                pos.Y = skel.Joints[JointType.HandRight].Position.Y;
-                pos.Z = skel.Joints[JointType.HandRight].Position.Z;
-                dc.DrawRectangle(null, new Pen(Brushes.Red, 3), new Rect(Point3DToScreen(pos).X- ancho / 2, Point3DToScreen(pos).Y- alto / 2, alto, ancho));
+                pos = Point3DToScreen(new Point3D(skel.Joints[JointType.HandRight].Position.X, skel.Joints[JointType.HandRight].Position.Y, skel.Joints[JointType.HandRight].Position.Z));
+                dc.DrawRectangle(null, new Pen(Brushes.Red, 3), new Rect(pos.X- ancho / 2, pos.Y- alto / 2, alto, ancho));
 
             }
             else
             {
-                dc.DrawRectangle(null, new Pen(Brushes.Red, 3), new Rect(Point3DToScreen(pos).X, Point3DToScreen(pos).Y, alto, ancho));
+                dc.DrawRectangle(null, new Pen(Brushes.Red, 3), new Rect(pos.X - ancho / 2, pos.Y - alto / 2, alto, ancho));
             }
         }
 
