@@ -10,6 +10,8 @@
 //	José Antonio Larrubia García
 //
 
+
+
 //Usamos como base para la práctica los proyectos del kinect developer toolkit
 //correspondientes al de imagen a color: ColorBasics-WPF y el que detecta el esqueleto: SkeletonBasics-WPF. 
 namespace Microsoft.Samples.Kinect.ColorBasics
@@ -21,6 +23,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
     using System.Windows.Media;
     using System.Windows.Media.Imaging;
     using Microsoft.Kinect;
+    using Microsoft.Kinect.Toolkit;
+    using Microsoft.Kinect.Toolkit.Interaction;
+
 
 
     /// <summary>
@@ -71,7 +76,8 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         /// <summary>
         /// Pen used for drawing bones that are currently tracked
         /// </summary>
-        private readonly Pen trackedBonePen = new Pen(Brushes.Green, 6);
+        private readonly Pen trackedBonePen1 = new Pen(Brushes.Green, 6);
+        private readonly Pen trackedBonePen2 = new Pen(Brushes.Blue, 6);
 
         /// <summary>
         /// Pen used for drawing bones that are currently inferred
@@ -92,7 +98,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         /// Active Kinect sensor
         /// </summary>
         private KinectSensor sensor;
-
         /// <summary>
         /// Bitmap that will hold color information
         /// </summary>
@@ -103,7 +108,12 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         /// </summary>
         private byte[] colorPixels;
 
-		/// <summary>
+        /// <summary>
+        /// Intermediate storage for the depth data received from the camera
+        /// </summary>
+        private DepthImagePixel[] depthPixels;
+
+        /// <summary>
         /// Variable booleana que comprobará si el usuario está o no en la posicion inicial especificada
         /// </summary>
         private Boolean comprobadaPosIni = false;
@@ -113,6 +123,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 		/// </summary>
         Mov movimientos;
         RectMov Rec;
+        private InteractionStream interactionStream;
+
+        public UserInfo[] userInfos;
 
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
@@ -125,6 +138,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             movimientos = new Mov(this);
             Rec = new RectMov(0,0,2.7F);
             InitializeComponent();
+            
         }
 
         /// <summary>
@@ -196,11 +210,16 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
             if (null != this.sensor)
             {
-                
+                // Allocate space to put the depth pixels we'll receive
+                this.depthPixels = new DepthImagePixel[this.sensor.DepthStream.FramePixelDataLength];
                 // Turn on the skeleton stream to receive skeleton frames
-                this.sensor.SkeletonStream.Enable();
+                sensor.SkeletonStream.Enable();
                 // Turn on the color stream to receive color frames
                 this.sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
+                // Turn on the depth stream to receive depth frames
+                this.sensor.DepthStream.Enable(DepthImageFormat.Resolution640x480Fps30);
+
+                this.userInfos = new UserInfo[InteractionFrame.UserInfoArrayLength];
 
                 // Allocate space to put the pixels we'll receive
                 this.colorPixels = new byte[this.sensor.ColorStream.FramePixelDataLength];
@@ -211,15 +230,19 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 // Set the image we display to point to the bitmap where we'll put the image data
                 this.Image.Source = this.imageSource;
                 
+                this.interactionStream = new InteractionStream(sensor, new DummyInteractionClient());
+                this.interactionStream.InteractionFrameReady += InteractionStreamOnInteractionFrameReady;
+                
+                
+
+                // Add an event handler to be called whenever there is new depth frame data
+                this.sensor.DepthFrameReady += this.SensorDepthFrameReady;
+                // Add an event handler to be called whenever there is new color frame data
+                this.sensor.ColorFrameReady += this.SensorColorFrameReady;
 
                 // Add an event handler to be called whenever there is new color frame data
                 this.sensor.SkeletonFrameReady += this.SensorSkeletonFrameReady;
-
-                // Add an event handler to be called whenever there is new color frame data
-                this.sensor.ColorFrameReady += this.SensorColorFrameReady;
                 
-
-
                 // Start the sensor!
                 try
                 {
@@ -291,16 +314,19 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                     
                     skeletons = new Skeleton[skeletonFrame.SkeletonArrayLength];
                     skeletonFrame.CopySkeletonDataTo(skeletons);
+                    Vector4 accelerometerReading = sensor.AccelerometerGetCurrentReading();
+                    interactionStream.ProcessSkeleton(skeletons, accelerometerReading, skeletonFrame.Timestamp);
                 }
             }
 
             using (DrawingContext dc = this.drawingGroup.Open())
             {
                 // Dibuja lo que contenga colorBitmap con el tamaño especificado
-                dc.DrawImage(this.colorBitmap, new Rect(0.0, 0.0, RenderWidth, RenderHeight));
+
+                //dc.DrawImage(this.colorBitmap, new Rect(0.0, 0.0, RenderWidth, RenderHeight));
                 //CroppedBitmap l = new CroppedBitmap(colorBitmap,new Int32Rect(0, 0, (int)RenderWidth / 2, (int)RenderHeight / 2));
                 //dc.DrawImage(l, new Rect(0.0, 0.0, RenderWidth, RenderHeight));
-                //System.Drawing.Image i = new System.Drawing.Bitmap(@"Images\img1.jpg");
+                //System.Drawing.Image i = new System.Drawing.Bitmap(@"Images/img1.jpg");
                 //ImageSourceConverter a = new ImageSourceConverter();
                 //dc.DrawImage((ImageSource)a.ConvertFrom(i), new Rect(0.0, 0.0, RenderWidth, RenderHeight));
                 //Comprobamos que kinect nos haya leido el esqueleto
@@ -315,55 +341,14 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 						//Si detecta los puntos de las articulaciones entra en este bloque.
                         if (skel.TrackingState == SkeletonTrackingState.Tracked)
                         {
-							// Detectamos si el esqueleto esta en la posición que queremos
-							// Si no está en la posición correcta entrará
-                            if (skel.Position.Z < 2.7 || skel.Position.Z>3.3)
-                            { 	
-								// Reiniciamos el primer movimiento para que si ha salido de la zona
-								// tenga que volver a colocarse y empezar de nuevo el movimiento.
-                                //movimientos.ReiniciarMovimiento();
-								
-								// Dibuja una flecha en el suelo que indica la posición que debe tener el usuario.
-								// A mayor distancia de la posición más grande será la flecha.
-								// Calculamos la posición del usuario y a donde tiene que dirigirse.								
-                                SkeletonPoint p_aux1 = new SkeletonPoint();
-                                p_aux1.X = (skel.Joints[JointType.FootLeft].Position.X + skel.Joints[JointType.FootRight].Position.X)/2;
-                                p_aux1.Y = skel.Joints[JointType.FootLeft].Position.Y;
-                                p_aux1.Z = 3.0F;
-                                SkeletonPoint p_aux2 = new SkeletonPoint();
-                                p_aux2.X = (skel.Joints[JointType.FootLeft].Position.X + skel.Joints[JointType.FootRight].Position.X) / 2;
-                                p_aux2.Y = skel.Joints[JointType.FootLeft].Position.Y;
-                                p_aux2.Z = (skel.Joints[JointType.FootLeft].Position.Z + skel.Joints[JointType.FootRight].Position.Z) / 2;
-                                
-                                this.DrawFlecha(p_aux2, p_aux1, dc);
-                            }
-							// Si hemos comprobado que el usuario se encuentra en la posición correcta entramos en este bloque.
-                            else // detectamos postura
-                            {
-                                // Primero detectaremos si el usuario está en la postura inicial para poder iniciar el movimiento.
-                                // de primeras nunca estará en la posicion inicial, usamos una booleana declarada e inicializada arriba para controlarlo.
-                                /*if (!comprobadaPosIni)
-                                {
-									//Pintamos una figura que indica cual es la postura inicial que debe tener el usuario y mostramos un texto de ayuda.
-                                    pi1.Visibility = Visibility.Visible;
-                                    textoAyuda.Text = "Adopte posición inicial";
-									//Comprobamos que esté o no en la postura correcta.
-                                    comprobadaPosIni = comprobarPosicion(skel);
-                                }
-								//Si el usuario se encuentra en la posición y postura correcta entra en este bloque donde se empieza el primer movimiento.
-                                else
-                                {
-                                    textoAyuda.Text = "Realice el movimiento";
-                                    movimientos.Empezar(skel, dc, sensor);
-
-                                }*/
-                                Rec.dibujar(skel, dc, sensor);
-                            }
+							
+                            Rec.dibujar(skel, dc, sensor);
+                            
 
                             //Dibujamos las articulaciones del esqueleto.
                             //this.DrawBonesAndJoints(skel, dc);
-                            dc.DrawEllipse(Brushes.Red, null, this.SkeletonPointToScreen(skel.Joints[JointType.HandLeft].Position), JointThickness, JointThickness);
-                            dc.DrawEllipse(Brushes.Red, null, this.SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position), JointThickness, JointThickness);
+                            dc.DrawEllipse(null, trackedBonePen2, this.SkeletonPointToScreen(skel.Joints[JointType.HandLeft].Position), JointThickness, JointThickness);
+                            dc.DrawEllipse(null, trackedBonePen1, this.SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position), JointThickness, JointThickness);
 
                         }
 						// Si no detecta las articulaciones y sólo detecta la posicion entra en este bloque.
@@ -385,86 +370,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             }
         }
 		
-		/// <summary>
-        /// Dibuja una flecha que usamos para que el usuario se coloque en la posición inicial.
-        /// </summary>
-        /// <param name="p1"> Punto donde se encuentra el usuario</param>
-        /// <param name="p2"> Punto a donde tiene que dirigirse el usuario</param>
-		/// <param name="d"> Para poder dibujar lineas.</param>
-        private void DrawFlecha(SkeletonPoint p1, SkeletonPoint p2, DrawingContext d) {
-			//Dibuja una linea hacia la posición que queremos a partir de la posición del usuario.
-            d.DrawLine(new Pen(Brushes.Red, 4), this.SkeletonPointToScreen(p1), this.SkeletonPointToScreen(p2));
-            
-			// Calculamos los puntos que se usarán para dibujar la flecha, 
-			// para que sea más grande si está más lejos usamos como cáculos el módulo del vector que forman los puntos introducidos.
-			double mod = Math.Sqrt(Math.Pow((p1.X - p2.X), 2)+ Math.Pow((p1.Y - p2.Y), 2)+ Math.Pow((p1.Z - p2.Z), 2));
-            SkeletonPoint p_aux1 = new SkeletonPoint();
-            p_aux1.X = (float)(p2.X + 0.25);
-            p_aux1.Y = p2.Y;
-            if (p1.Z < p2.Z)
-            {
-                p_aux1.Z = p2.Z - 0.35F;
-            }
-            else
-            {
-                p_aux1.Z = p2.Z + 0.35F;
-            }
-            d.DrawLine(new Pen(Brushes.Red, 4), this.SkeletonPointToScreen(p_aux1), this.SkeletonPointToScreen(p2));
-
-            SkeletonPoint p_aux2 = new SkeletonPoint();
-            p_aux2.X = (float)(p2.X - 0.25);
-            p_aux2.Y = p2.Y;
-            if (p1.Z < p2.Z)
-            {
-                p_aux2.Z = p2.Z - 0.35F;
-            }
-            else
-            {
-                p_aux2.Z = p2.Z + 0.35F;
-            }
-            d.DrawLine(new Pen(Brushes.Red, 4), this.SkeletonPointToScreen(p_aux2), this.SkeletonPointToScreen(p2));
-            
-
-        }
 		
-		/// <summary>
-        /// Comprueba la postura del usuario.
-        /// </summary>
-        /// <param name="skeleton"> esqueleto a comprobar su postura</param>
-        private Boolean comprobarPosicion(Skeleton skeleton) {
-			// Es llamada después de estar en la posición correcta del espacio.
-			// Si no tiene la postura correcta los puntos de las articulaciones se pintarán de rojo, y devolverá false
-			// si tiene la postura correcta se pintarán de verde no notandose ya que el esqueleto es verde y devuelve true.
-            if ((skeleton.Joints[JointType.HandLeft].Position.X > skeleton.Joints[JointType.ElbowLeft].Position.X + 0.1F ||
-                skeleton.Joints[JointType.HandLeft].Position.X < skeleton.Joints[JointType.ElbowLeft].Position.X - 0.1F) ||
-                (skeleton.Joints[JointType.HandRight].Position.X > skeleton.Joints[JointType.ElbowRight].Position.X + 0.1F ||
-                skeleton.Joints[JointType.HandRight].Position.X < skeleton.Joints[JointType.ElbowRight].Position.X - 0.1F) ||
-                (skeleton.Joints[JointType.ShoulderLeft].Position.X > skeleton.Joints[JointType.ElbowLeft].Position.X + 0.1F ||
-                skeleton.Joints[JointType.ShoulderLeft].Position.X < skeleton.Joints[JointType.ElbowLeft].Position.X - 0.1F) ||
-                (skeleton.Joints[JointType.ShoulderRight].Position.X > skeleton.Joints[JointType.ElbowRight].Position.X + 0.1F ||
-                skeleton.Joints[JointType.ShoulderRight].Position.X < skeleton.Joints[JointType.ElbowRight].Position.X - 0.1F) ||
-                (skeleton.Joints[JointType.ShoulderCenter].Position.X > skeleton.Joints[JointType.HipCenter].Position.X + 0.1F)
-                )
-            {
-                
-                trackedJointBrush = Brushes.Red;
-                return false;
-
-            }else if (skeleton.Joints[JointType.ShoulderCenter].Position.Z > skeleton.Joints[JointType.ElbowLeft].Position.Z + 0.1F ||
-                   skeleton.Joints[JointType.ShoulderCenter].Position.Z > skeleton.Joints[JointType.HandLeft].Position.Z + 0.1F ||
-                   skeleton.Joints[JointType.ShoulderCenter].Position.Z > skeleton.Joints[JointType.ElbowRight].Position.Z + 0.1F ||
-                   skeleton.Joints[JointType.ShoulderCenter].Position.Z > skeleton.Joints[JointType.HandRight].Position.Z + 0.1F ||
-                   skeleton.Joints[JointType.ShoulderCenter].Position.Z > skeleton.Joints[JointType.HipCenter].Position.Z + 0.1F)
-            {
-                trackedJointBrush = Brushes.Red;
-                return false;
-            }
-            else {
-                trackedJointBrush = Brushes.Green;
-                return true;
-            }
-
-        }
+		
+		
 
         /// <summary>
         /// Draws a skeleton's bones and joints
@@ -566,18 +474,200 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             Pen drawPen = this.inferredBonePen;
             if (joint0.TrackingState == JointTrackingState.Tracked && joint1.TrackingState == JointTrackingState.Tracked)
             {
-                drawPen = this.trackedBonePen;
+                drawPen = this.trackedBonePen1;
             }
 
             drawingContext.DrawLine(drawPen, this.SkeletonPointToScreen(joint0.Position), this.SkeletonPointToScreen(joint1.Position));
         }
-		
-		/// <summary>
+
+        /// <summary>
+        /// Event handler for Kinect sensor's DepthFrameReady event
+        /// </summary>
+        /// <param name="sender">object sending the event</param>
+        /// <param name="e">event arguments</param>
+        private void SensorDepthFrameReady(object sender, DepthImageFrameReadyEventArgs e)
+        {
+            using (DepthImageFrame depthFrame = e.OpenDepthImageFrame())
+            {
+                if (depthFrame != null)
+                {
+                    // Copy the pixel data from the image to a temporary array
+                    depthFrame.CopyDepthImagePixelDataTo(this.depthPixels);
+                    interactionStream.ProcessDepth(depthFrame.GetRawPixelData(), depthFrame.Timestamp);
+                    // Get the min and max reliable depth for the current frame
+                    int minDepth = depthFrame.MinDepth;
+                    int maxDepth = depthFrame.MaxDepth;
+
+                    // Convert the depth to RGB
+                    int colorPixelIndex = 0;
+                    for (int i = 0; i < this.depthPixels.Length; ++i)
+                    {
+                        // Get the depth for this pixel
+                        short depth = depthPixels[i].Depth;
+
+                        // To convert to a byte, we're discarding the most-significant
+                        // rather than least-significant bits.
+                        // We're preserving detail, although the intensity will "wrap."
+                        // Values outside the reliable depth range are mapped to 0 (black).
+
+                        // Note: Using conditionals in this loop could degrade performance.
+                        // Consider using a lookup table instead when writing production code.
+                        // See the KinectDepthViewer class used by the KinectExplorer sample
+                        // for a lookup table example.
+                        byte intensity = (byte)(depth >= minDepth && depth <= maxDepth ? depth : 0);
+
+                        // Write out blue byte
+                        this.colorPixels[colorPixelIndex++] = intensity;
+
+                        // Write out green byte
+                        this.colorPixels[colorPixelIndex++] = intensity;
+
+                        // Write out red byte                        
+                        this.colorPixels[colorPixelIndex++] = intensity;
+
+                        // We're outputting BGR, the last byte in the 32 bits is unused so skip it
+                        // If we were outputting BGRA, we would write alpha here.
+                        ++colorPixelIndex;
+                    }
+
+                    // Write the pixel data into our bitmap
+                    /*this.colorBitmap.WritePixels(
+                        new Int32Rect(0, 0, this.colorBitmap.PixelWidth, this.colorBitmap.PixelHeight),
+                        this.colorPixels,
+                        this.colorBitmap.PixelWidth * sizeof(int),
+                        0);*/
+                }
+            }
+        }
+
+        
+        /// <summary>
         /// Evento para controlar el margen que queremos para hacer el movimiento más o menos preciso que el que hemos puesto por defecto.
         /// </summary>
         private void mError_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             movimientos.setMargenError(0.01F * ((float)(mError.Value)));
+        }
+
+        
+        private void InteractionStreamOnInteractionFrameReady(object sender, InteractionFrameReadyEventArgs e)
+        {
+            
+            using (InteractionFrame frame = e.OpenInteractionFrame())
+            {
+                if (frame != null)
+                {
+                    if (this.userInfos == null)
+                    {
+                        this.userInfos = new UserInfo[InteractionFrame.UserInfoArrayLength];
+                    }
+
+                    frame.CopyInteractionDataTo(this.userInfos);
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+
+
+            foreach (UserInfo userInfo in this.userInfos)
+            {
+                foreach (InteractionHandPointer handPointer in userInfo.HandPointers)
+                {
+                    string action = null;
+                    switch (handPointer.HandEventType)
+                    {
+                        case InteractionHandEventType.Grip:
+                            action = "gripped";
+                            break;
+
+                        case InteractionHandEventType.GripRelease:
+                            action = "released";
+
+                            break;
+                    }
+
+                    if (action != null)
+                    {
+                        string handSide = "unknown";
+
+                        switch (handPointer.HandType)
+                        {
+                            case InteractionHandType.Left:
+                                handSide = "left";
+                                break;
+
+                            case InteractionHandType.Right:
+                                handSide = "right";
+                                break;
+                        }
+
+                        if (handSide == "left")
+                        {
+                            if (action == "released")
+                            {
+                                Rec.soltar();
+                                trackedBonePen2.Brush = Brushes.Green;
+                            }
+                            else
+                            {
+                                Rec.soltar();
+                                Rec.coger();
+                                trackedBonePen2.Brush = Brushes.Red;
+                            }
+                        }
+                        else
+                        {
+                            if (action == "released")
+                            {
+                                Rec.soltar();
+                                trackedBonePen1.Brush = Brushes.Blue;
+                            }
+                            else
+                            {
+                                Rec.soltar();
+                                Rec.coger();
+                                trackedBonePen1.Brush = Brushes.Yellow;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public class DummyInteractionClient : IInteractionClient
+    {
+
+        public InteractionInfo GetInteractionInfoAtLocation(
+            int skeletonTrackingId,
+            InteractionHandType handType,
+            double x,
+            double y)
+        {
+            var result = new InteractionInfo();
+            result.IsGripTarget = true;
+            result.IsPressTarget = true;
+            result.PressAttractionPointX = 0.5;
+            result.PressAttractionPointY = 0.5;
+            result.PressTargetControlId = 1;
+
+            return result;
+        }
+    }
+    //La clase de cuenta final de la interfaz interactiva  
+    public class InteractionClient : IInteractionClient
+    {
+        //Lograr la interacción de objetos  
+        public InteractionInfo GetInteractionInfoAtLocation(int skeletonTrackingId, InteractionHandType handType, double x, double y)
+        {
+            return new InteractionInfo
+            {
+                IsPressTarget = true,
+                IsGripTarget = true,
+            };
         }
     }
 }

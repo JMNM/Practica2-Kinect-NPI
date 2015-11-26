@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Microsoft.Samples.Kinect.ColorBasics
+﻿namespace Microsoft.Samples.Kinect.ColorBasics
 {
     using System;
     using System.Windows;
     using System.Windows.Media;
     using Microsoft.Kinect;
     using System.Windows.Media.Media3D;
-
-
+    
 
     class RectMov
     {
@@ -22,6 +16,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         private Boolean cogidoD;
         private SkeletonPoint c;
         private int tem_pos = 0;
+        private Skeleton sk;
         /// <summary>
         /// Sensor de kinect, será pasado por parámetros al necesitarlo
         /// </summary>
@@ -29,8 +24,8 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         public RectMov(float x, float y, float z)
         {
             pos = new Point3D(x, y, z);
-            ancho = 10;
-            alto = 10;
+            ancho = 100;
+            alto = 100;
             cogidoD = false;
             cogidoI = false;
         }
@@ -42,57 +37,25 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             cogidoD = cogD;
             cogidoI = cogI;
         }
-        public void coger(Skeleton skel,DrawingContext d) {
-            if (skel.Joints[JointType.HandRight].Position.X == pos.X && skel.Joints[JointType.HandRight].Position.Y == pos.Y &&
-                skel.Joints[JointType.HandRight].Position.Z >= pos.Z && !cogidoD && !cogidoI)
+        public void coger() {
+            if (sk != null)
             {
-                /*
-                cogidoD = true;
-                cogidoI = false;
-                pos.X = skel.Joints[JointType.HandRight].Position.X;
-                pos.Y = skel.Joints[JointType.HandRight].Position.Y;
-                pos.Z = skel.Joints[JointType.HandRight].Position.Z;
-                */
-                int relleno = DateTime.Now.Hour * 3600 + DateTime.Now.Minute * 60 + DateTime.Now.Second - tem_pos;
-                if (relleno < 5)
-                {
-                    Point el1 = Point3DToScreen(pos);
-                    
-                    d.DrawEllipse(Brushes.White, null, el1, 30, 30);
-                    d.DrawEllipse(null,new Pen(Brushes.Green, 18), el1, relleno*6,relleno*6);
-                }
-                else if (relleno >= 5)
+                if (sk.Joints[JointType.HandRight].Position.X >= pos.X && sk.Joints[JointType.HandRight].Position.X <= pos.X + ancho
+                    && sk.Joints[JointType.HandRight].Position.Y <= pos.Y + alto&& sk.Joints[JointType.HandRight].Position.Y >= pos.Y - alto &&
+                     !cogidoD)
                 {
                     cogidoD = true;
                     cogidoI = false;
-                }
-            }
-            else if (skel.Joints[JointType.HandLeft].Position.X == pos.X && skel.Joints[JointType.HandLeft].Position.Y == pos.Y &&
-                skel.Joints[JointType.HandLeft].Position.Z >= pos.Z && !cogidoD && !cogidoI)
-            {
-                /*cogidoI = true;
-                cogidoD = false;
-                pos.X = skel.Joints[JointType.HandLeft].Position.X;
-                pos.Y = skel.Joints[JointType.HandLeft].Position.Y;
-                pos.Z = skel.Joints[JointType.HandLeft].Position.Z;
-                */
-                int relleno = DateTime.Now.Hour * 3600 + DateTime.Now.Minute * 60 + DateTime.Now.Second - tem_pos;
-                if (relleno < 5)
-                {
-                    Point el1 = Point3DToScreen(pos);
 
-                    d.DrawEllipse(Brushes.White, null, el1, 30, 30);
-                    d.DrawEllipse(null, new Pen(Brushes.Green, 18), el1, relleno * 6, relleno * 6);
                 }
-                else if (relleno >= 5)
+                else if (sk.Joints[JointType.HandLeft].Position.X >= pos.X - ancho / 2 && sk.Joints[JointType.HandLeft].Position.X <= pos.X + ancho / 2
+                    && sk.Joints[JointType.HandLeft].Position.Y <= pos.Y + alto / 2 && sk.Joints[JointType.HandLeft].Position.Y >= pos.Y - alto / 2 &&
+                     !cogidoI)
                 {
-                    cogidoD = true;
-                    cogidoI = false;
+                    cogidoI = true;
+                    cogidoD = false;
+
                 }
-            }
-            else
-            {
-                tem_pos = DateTime.Now.Hour * 3600 + DateTime.Now.Minute * 60 + DateTime.Now.Second;
             }
 
         }
@@ -108,39 +71,21 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         {
             // Asignamos el sensor pasado por argumentos.
             sensor = se;
-            coger(skel, dc);
+            sk = skel;
             if (cogidoI)
             {
                 pos.X = skel.Joints[JointType.HandLeft].Position.X;
                 pos.Y = skel.Joints[JointType.HandLeft].Position.Y;
                 pos.Z = skel.Joints[JointType.HandLeft].Position.Z;
-                dc.DrawRectangle(null, new Pen(Brushes.Red, 3), new Rect(Point3DToScreen(pos).X, Point3DToScreen(pos).Y, alto, ancho));
-
-                Point3D pL = new Point3D();
-                pL.X = skel.Joints[JointType.ShoulderRight].Position.X + 0.6F;
-                pL.Y = skel.Joints[JointType.ShoulderRight].Position.Y + 0.6F;
-                pL.Z = skel.Joints[JointType.ShoulderRight].Position.Z;
-                dc.DrawEllipse(Brushes.Red,null, Point3DToScreen(pL), 20, 20);
-
-                if (pos.Z < skel.Joints[JointType.ShoulderLeft].Position.Z - 0.60F) {
-                    soltar();
-                }
+                dc.DrawRectangle(null, new Pen(Brushes.Red, 3), new Rect(Point3DToScreen(pos).X - ancho / 2, Point3DToScreen(pos).Y - alto / 2, alto, ancho));
+                
             }
             else if (cogidoD) {
                 pos.X = skel.Joints[JointType.HandRight].Position.X;
                 pos.Y = skel.Joints[JointType.HandRight].Position.Y;
                 pos.Z = skel.Joints[JointType.HandRight].Position.Z;
-                dc.DrawRectangle(null, new Pen(Brushes.Red, 3), new Rect(Point3DToScreen(pos).X, Point3DToScreen(pos).Y, alto, ancho));
+                dc.DrawRectangle(null, new Pen(Brushes.Red, 3), new Rect(Point3DToScreen(pos).X- ancho / 2, Point3DToScreen(pos).Y- alto / 2, alto, ancho));
 
-                Point3D pL = new Point3D();
-                pL.X = skel.Joints[JointType.ShoulderLeft].Position.X - 0.6F;
-                pL.Y = skel.Joints[JointType.ShoulderLeft].Position.Y + 0.6F;
-                pL.Z = skel.Joints[JointType.ShoulderLeft].Position.Z;
-                dc.DrawEllipse(Brushes.Red, null, Point3DToScreen(pL), 20, 20);
-                if (pos.Z < skel.Joints[JointType.ShoulderRight].Position.Z - 0.60F)
-                {
-                    soltar();
-                }
             }
             else
             {

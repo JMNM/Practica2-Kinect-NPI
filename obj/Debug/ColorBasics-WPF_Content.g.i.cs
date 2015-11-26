@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("images/mov1.png")]
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("images/mov2.png")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("kinectinteraction180_32.dll")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("kinectinteraction180_64.dll")]
 
 

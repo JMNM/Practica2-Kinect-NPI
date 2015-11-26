@@ -1,0 +1,16 @@
+C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\bin\Release\ColorBasics-WPF.exe
+C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\bin\Release\ColorBasics-WPF.pdb
+C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\bin\Release\Microsoft.Kinect.dll
+C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\bin\Release\Microsoft.Kinect.Toolkit.Controls.dll
+C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\bin\Release\Microsoft.Kinect.Toolkit.dll
+C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\bin\Release\Microsoft.Kinect.Toolkit.Interaction.dll
+C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\bin\Release\Microsoft.Kinect.xml
+C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\obj\Release\MainWindow.baml
+C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\obj\Release\MainWindow.g.cs
+C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\obj\Release\App.g.cs
+C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\obj\Release\ColorBasics-WPF_MarkupCompile.cache
+C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\obj\Release\ColorBasics-WPF.g.resources
+C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\obj\Release\Microsoft.Samples.Kinect.ColorBasics.Properties.Resources.resources
+C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\obj\Release\ColorBasics-WPF.csproj.GenerateResource.Cache
+C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\obj\Release\ColorBasics-WPF.exe
+C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\obj\Release\ColorBasics-WPF.pdb
