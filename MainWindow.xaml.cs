@@ -122,10 +122,11 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         /// Variable de clase creada por nosotros, ver Mov.cs para ver lo que hace la clase, se encarga de que el usuario realice el movimiento.
 		/// </summary>
         Mov movimientos;
-        RectMov Rec;
+        RectImagen Rec;
         private InteractionStream interactionStream;
 
         public UserInfo[] userInfos;
+        private Puzzle puzzle;
 
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
@@ -136,8 +137,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 			/// Inicializamos los componentes, tanto los de la interfaz gráfica como los del movimiento a realizar.
 			/// </summary>
             movimientos = new Mov(this);
-            Rec = new RectMov(0,0);
+            Rec = new RectImagen(0,0);
             InitializeComponent();
+            puzzle = new Puzzle(@"C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\img1.jpg");
             
         }
 
@@ -242,7 +244,8 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
                 // Add an event handler to be called whenever there is new color frame data
                 this.sensor.SkeletonFrameReady += this.SensorSkeletonFrameReady;
-                
+
+                this.puzzle.asignarSensor(this.sensor);
                 // Start the sensor!
                 try
                 {
@@ -322,7 +325,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             using (DrawingContext dc = this.drawingGroup.Open())
             {
                 // Dibuja lo que contenga colorBitmap con el tamaño especificado
-                dc.DrawImage(this.colorBitmap, new Rect(0.0, 0.0, RenderWidth, RenderHeight));
+                dc.DrawRectangle(Brushes.White, null, new Rect(0.0, 0.0, RenderWidth, RenderHeight));
+                puzzle.DrawPuzzle(dc);
+                //dc.DrawImage(this.colorBitmap, new Rect(0.0, 0.0, RenderWidth, RenderHeight));
                 //CroppedBitmap l = new CroppedBitmap(colorBitmap,new Int32Rect(0, 0, (int)RenderWidth / 2, (int)RenderHeight / 2));
                 //dc.DrawImage(l, new Rect(0.0, 0.0, RenderWidth/2, RenderHeight/2));
                 //System.Drawing.Image i = new System.Drawing.Bitmap(@"Images/img1.jpg");
@@ -340,9 +345,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 						//Si detecta los puntos de las articulaciones entra en este bloque.
                         if (skel.TrackingState == SkeletonTrackingState.Tracked)
                         {
-							
-                            Rec.dibujar(skel, dc, sensor);
-                            
+
+                            puzzle.actualizarSkeleto(skel);
+                            puzzle.DrawPuzzle( dc, sensor);
 
                             //Dibujamos las articulaciones del esqueleto.
                             //this.DrawBonesAndJoints(skel, dc);
@@ -607,12 +612,12 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                         {
                             if (action == "released")
                             {
-                                Rec.soltar(handSide);
+                                puzzle.soltar(handSide);
                                 trackedBonePen2.Brush = Brushes.Green;
                             }
                             else
                             {
-                                Rec.coger(handSide);
+                                puzzle.coger(handSide);
                                 trackedBonePen2.Brush = Brushes.Red;
                             }
                         }
@@ -620,12 +625,12 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                         {
                             if (action == "released")
                             {
-                                Rec.soltar(handSide);
+                                puzzle.soltar(handSide);
                                 trackedBonePen1.Brush = Brushes.Blue;
                             }
                             else
                             {
-                                Rec.coger(handSide);
+                                puzzle.coger(handSide);
                                 trackedBonePen1.Brush = Brushes.Yellow;
                             }
                         }
