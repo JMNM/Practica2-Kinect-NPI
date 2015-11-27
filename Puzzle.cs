@@ -65,6 +65,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         }
         public void actualizarSkeleto(Skeleton sk) { skel = sk; }
         public void asignarSensor(KinectSensor s) { sensor = s; }
+
         public void DrawPuzzle(DrawingContext dc)
         {
             for(int i = 0; i < 9; i++)
@@ -76,13 +77,13 @@ namespace Microsoft.Samples.Kinect.ColorBasics
            
 
         }
-        public void DrawPuzzle( DrawingContext dc, KinectSensor se)
+        public void DrawPuzzleCogidos( DrawingContext dc)
         {
             for (int i = 0; i < 9; i++)
             {
                 if (rect[i].getCogido())
                 {
-                    rect[i].dibujar(dc, se, SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position), SkeletonPointToScreen(skel.Joints[JointType.HandLeft].Position));
+                    rect[i].dibujar(dc, SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position), SkeletonPointToScreen(skel.Joints[JointType.HandLeft].Position));
                 }
             }
             
@@ -108,7 +109,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                                     rec_inter = j;
                                 }
                             }
-                            if (rec_inter != -1)
+                            if (rec_inter != -1 && i!= rec_inter)
                             {
                                 Point p_nuevo = rect[rec_inter].getPosicion();
                                 rect[rec_inter].setPosicion(rect[i].getPosicionOld());
@@ -116,8 +117,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                                 rect[i].setPosicion(rect[rec_inter].getPosicionOld());
                                 rect[rec_inter].setPosicionOld(rect[rec_inter].getPosicion());
                                 rect[i].setPosicionOld(rect[i].getPosicion());
-                            }
-                        }else if(mano=="right"){
+                            }else rect[i].soltar(mano);
+                        }
+                        else if(mano=="right"){
                             Point p = SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position);
                             int rec_inter = -1;
                             for (int j = 0; j < 9; j++)
@@ -127,7 +129,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                                     rec_inter = j;
                                 }
                             }
-                            if (rec_inter != -1)
+                            if (rec_inter != -1 && i!=rec_inter)
                             {
                                 Point p_nuevo = rect[rec_inter].getPosicion();
                                 rect[rec_inter].setPosicion(rect[i].getPosicionOld());
@@ -135,7 +137,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                                 rect[i].setPosicion(rect[rec_inter].getPosicionOld());
                                 rect[rec_inter].setPosicionOld(rect[rec_inter].getPosicion());
                                 rect[i].setPosicionOld(rect[i].getPosicion());
-                            }
+                            }else rect[i].soltar(mano);
                         }
                     }
             }

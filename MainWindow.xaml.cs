@@ -325,14 +325,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             using (DrawingContext dc = this.drawingGroup.Open())
             {
                 // Dibuja lo que contenga colorBitmap con el tamaño especificado
-                dc.DrawRectangle(Brushes.White, null, new Rect(0.0, 0.0, RenderWidth, RenderHeight));
+                //dc.DrawRectangle(Brushes.White, null, new Rect(0.0, 0.0, RenderWidth, RenderHeight));
                 puzzle.DrawPuzzle(dc);
                 //dc.DrawImage(this.colorBitmap, new Rect(0.0, 0.0, RenderWidth, RenderHeight));
-                //CroppedBitmap l = new CroppedBitmap(colorBitmap,new Int32Rect(0, 0, (int)RenderWidth / 2, (int)RenderHeight / 2));
-                //dc.DrawImage(l, new Rect(0.0, 0.0, RenderWidth/2, RenderHeight/2));
-                //System.Drawing.Image i = new System.Drawing.Bitmap(@"Images/img1.jpg");
-                //ImageSourceConverter a = new ImageSourceConverter();
-                //dc.DrawImage((ImageSource)a.ConvertFrom(i), new Rect(0.0, 0.0, RenderWidth, RenderHeight));
+                
                 //Comprobamos que kinect nos haya leido el esqueleto
                 if (skeletons.Length != 0)
                 {
@@ -347,9 +343,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                         {
 
                             puzzle.actualizarSkeleto(skel);
-                            puzzle.DrawPuzzle( dc, sensor);
+                            puzzle.DrawPuzzleCogidos( dc);
 
-                            //Dibujamos las articulaciones del esqueleto.
+                            //Dibujamos los puntos de las manos.
                             //this.DrawBonesAndJoints(skel, dc);
                             dc.DrawEllipse(null, trackedBonePen2, this.SkeletonPointToScreen(skel.Joints[JointType.HandLeft].Position), JointThickness, JointThickness);
                             dc.DrawEllipse(null, trackedBonePen1, this.SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position), JointThickness, JointThickness);

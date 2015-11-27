@@ -85,7 +85,7 @@
         public void dibujar(DrawingContext dc) {
             dc.DrawImage(img, new System.Windows.Rect(pos.X, pos.Y, ancho, alto));
         }
-        public void dibujar( DrawingContext dc, KinectSensor se, Point posd, Point posi)
+        public void dibujar( DrawingContext dc, Point posd, Point posi)
         {
             
             if (cogidoI)
