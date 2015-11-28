@@ -15,12 +15,16 @@ namespace Microsoft.Samples.Kinect.ColorBasics
     class Puzzle
     {
         private Image imagen;
-        private Image[] imagenes=new Image[9];
+        private Image[] imagenes;
         
-        private int[] pos = new int[9];
-        private RectImagen[] rect = new RectImagen[9];
+        private int[] pos;
+        private RectImagen[] rect;
         private Skeleton skel;
         private KinectSensor sensor;
+        private int width;
+        private int height;
+        private int piezas_width;
+        private int piezas_height;
 
         public Puzzle(String im) {
             try {
@@ -30,23 +34,32 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             {
                 System.Console.WriteLine("Imagen no encontrada");
             }
-            for(int i = 0; i < 9; i++) { pos[i] = -1; }
+            width=640;
+            height = 480;
+            piezas_width = 4;
+            piezas_height = 3;
+            pos = new int[piezas_height * piezas_width];
+            rect = new RectImagen[piezas_height * piezas_width];
+            imagenes = new Image[piezas_height * piezas_width];
+            for (int i = 0; i < piezas_height*piezas_width; i++) { pos[i] = -1; }
             Random a = new Random();
-            for (int i = 0; i < 9; i++)
+            for (int i = 0; i < piezas_height * piezas_width; i++)
             {
-                int n = a.Next(0,9);
+                int n = a.Next(0, piezas_height * piezas_width);
                 while (pos[n] != -1) {
-                    n=(n+1)%9;
+                    n=(n+1)% piezas_height * piezas_width;
                 }
                 pos[n] = i;
                 System.Console.WriteLine(n);
             }
-            for(int i = 0; i < 9; i++) {
-                imagenes[i] = new Bitmap(imagen.Size.Width/3,imagen.Size.Height/3);
+            for(int i = 0; i < piezas_height * piezas_width; i++) {
+                imagenes[i] = new Bitmap(imagen.Size.Width/ piezas_width, imagen.Size.Height/ piezas_height);
                 var gra = Graphics.FromImage(imagenes[i]);
-                int ipos = pos[i] / 3;
-                int jpos = pos[i]%3;
-                gra.DrawImage(imagen, new Rectangle(0, 0, imagen.Size.Width / 3, imagen.Size.Height / 3), new Rectangle(ipos* imagen.Size.Width / 3,jpos* imagen.Size.Height / 3, imagen.Size.Width / 3, imagen.Size.Height / 3),GraphicsUnit.Pixel);
+                int ipos = pos[i] / piezas_width;
+                int jpos = pos[i]% piezas_width;
+                gra.DrawImage(imagen, new Rectangle(0, 0, imagen.Size.Width / piezas_width, imagen.Size.Height / piezas_height), 
+                    new Rectangle(ipos* imagen.Size.Width /piezas_width, jpos* imagen.Size.Height / piezas_height, imagen.Size.Width / piezas_width, imagen.Size.Height / piezas_height),
+                    GraphicsUnit.Pixel);
                 gra.Dispose();
 
                 BitmapImage bi = new BitmapImage();
@@ -56,9 +69,63 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 ms.Seek(0, SeekOrigin.Begin);
                 bi.StreamSource = ms;
                 bi.EndInit();
-                int i_rec = i / 3;
-                int j_rec = i % 3;
-                rect[i] = new RectImagen(i_rec * 640 / 3, j_rec * 480 / 3, 640 / 3, 480 / 3, bi);
+                int i_rec = i / piezas_width;
+                int j_rec = i % piezas_width;
+                rect[i] = new RectImagen(i_rec * width / piezas_width, j_rec * height / piezas_height, width / piezas_width, height / piezas_width, bi);
+                rect[i].setPosicionOld(rect[i].getPosicion());
+
+            }
+        }
+        public Puzzle(String im,int w,int h,int p_w,int p_h)
+        {
+            try
+            {
+                imagen = Image.FromFile(im);
+            }
+            catch
+            {
+                System.Console.WriteLine("Imagen no encontrada");
+            }
+            width = w;
+            height = h;
+            piezas_width = p_w;
+            piezas_height = p_h;
+            pos = new int[piezas_height * piezas_width];
+            rect = new RectImagen[piezas_height * piezas_width];
+            imagenes = new Image[piezas_height * piezas_width];
+            for (int i = 0; i < piezas_height * piezas_width; i++) { pos[i] = -1; }
+            Random a = new Random();
+            for (int i = 0; i < piezas_height * piezas_width; i++)
+            {
+                int n = a.Next(0, piezas_height * piezas_width);
+                while (pos[n] != -1)
+                {
+                    n = (n + 1) % piezas_height * piezas_width;
+                }
+                pos[n] = i;
+                System.Console.WriteLine(n);
+            }
+            for (int i = 0; i < piezas_height * piezas_width; i++)
+            {
+                imagenes[i] = new Bitmap(imagen.Size.Width / piezas_width, imagen.Size.Height / piezas_height);
+                var gra = Graphics.FromImage(imagenes[i]);
+                int ipos = pos[i] / piezas_width;
+                int jpos = pos[i] % piezas_width;
+                gra.DrawImage(imagen, new Rectangle(0, 0, imagen.Size.Width / piezas_width, imagen.Size.Height / piezas_height),
+                    new Rectangle(ipos * imagen.Size.Width / piezas_width, jpos * imagen.Size.Height / piezas_height, imagen.Size.Width / piezas_width, imagen.Size.Height / piezas_height),
+                    GraphicsUnit.Pixel);
+                gra.Dispose();
+
+                BitmapImage bi = new BitmapImage();
+                bi.BeginInit();
+                MemoryStream ms = new MemoryStream();
+                imagenes[i].Save(ms, ImageFormat.Bmp);
+                ms.Seek(0, SeekOrigin.Begin);
+                bi.StreamSource = ms;
+                bi.EndInit();
+                int i_rec = i / piezas_width;
+                int j_rec = i % piezas_width;
+                rect[i] = new RectImagen(i_rec * width / piezas_width, j_rec * height / piezas_height, width / piezas_width, height / piezas_width, bi);
                 rect[i].setPosicionOld(rect[i].getPosicion());
 
             }
@@ -68,7 +135,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
         public void DrawPuzzle(DrawingContext dc)
         {
-            for(int i = 0; i < 9; i++)
+            for(int i = 0; i < piezas_height * piezas_width; i++)
             {
                 if(!rect[i].getCogido())
                     rect[i].dibujar(dc);
@@ -79,7 +146,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         }
         public void DrawPuzzleCogidos( DrawingContext dc)
         {
-            for (int i = 0; i < 9; i++)
+            for (int i = 0; i < piezas_height * piezas_width; i++)
             {
                 if (rect[i].getCogido())
                 {
@@ -89,20 +156,20 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             
         }
         public void coger(String mano) {
-            for (int i = 0; i < 9; i++) {
+            for (int i = 0; i < piezas_height * piezas_width; i++) {
                 rect[i].coger(mano,SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position), SkeletonPointToScreen(skel.Joints[JointType.HandLeft].Position));
             }
         }
         public void soltar(String mano)
         {
-            for (int i = 0; i < 9; i++)
+            for (int i = 0; i < piezas_height * piezas_width; i++)
             {
                 if (rect[i].getCogido())
                     if (rect[i].getMano() == mano) {
                         if (mano == "left") {
                             Point p = SkeletonPointToScreen(skel.Joints[JointType.HandLeft].Position);
                             int rec_inter = -1;
-                            for (int j = 0; j < 9; j++)
+                            for (int j = 0; j < piezas_height * piezas_width; j++)
                             {
                                 if (!rect[j].getCogido() && rect[j].inRectImagen(p.X, p.Y))
                                 {
@@ -122,7 +189,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                         else if(mano=="right"){
                             Point p = SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position);
                             int rec_inter = -1;
-                            for (int j = 0; j < 9; j++)
+                            for (int j = 0; j < piezas_height * piezas_width; j++)
                             {
                                 if (!rect[j].getCogido() && rect[j].inRectImagen(p.X, p.Y))
                                 {
