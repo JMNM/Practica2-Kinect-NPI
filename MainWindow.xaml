@@ -66,7 +66,6 @@
             <Image x:Name="mov2" Source="Images\mov2.png" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-140,-110,0,5" Visibility="Hidden" Width="138"/>
             <TextBlock x:Name="textoAyuda" DockPanel.Dock="Left" Margin="-100 0 -1 0" VerticalAlignment="Top" HorizontalAlignment="Left" Foreground="{StaticResource MediumGreyBrush}" FontFamily="Segoe UI" FontSize="18" Width="150" RenderTransformOrigin="-0.34,5.5"><Run Text=""/></TextBlock>
         </DockPanel>
-        <Slider x:Name="mError" Value="15" ValueChanged="mError_ValueChanged" HorizontalAlignment="Left" Margin="10,41,0,0" Grid.Row="4" VerticalAlignment="Top" Width="217" Maximum="25" Minimum="5" Height="18"/>
         <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Height="37" Margin="10,3,0,0" Grid.Row="4" TextWrapping="Wrap" VerticalAlignment="Top" Width="217"><Run Text="Margen de error"/><Run Text=" (m):"/><LineBreak/><Run Text="0.05&#x9;&#x9;0.15&#x9;&#x9;0.25&#x9;"/></TextBlock>
 
 

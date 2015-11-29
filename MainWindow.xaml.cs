@@ -112,20 +112,21 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         /// Intermediate storage for the depth data received from the camera
         /// </summary>
         private DepthImagePixel[] depthPixels;
-
-        /// <summary>
-        /// Variable booleana que comprobará si el usuario está o no en la posicion inicial especificada
-        /// </summary>
-        private Boolean comprobadaPosIni = false;
-
+        
 		/// <summary>
-        /// Variable de clase creada por nosotros, ver Mov.cs para ver lo que hace la clase, se encarga de que el usuario realice el movimiento.
+        /// Variable para usar los comandos de agarre y soltar implementados a partir de la versión 1.7 de kinect.
 		/// </summary>
-        Mov movimientos;
-        RectImagen Rec;
         private InteractionStream interactionStream;
 
+        
+		/// <summary>
+        /// Información del usuario que necesita la clase InteractionStream.
+		/// </summary>
         public UserInfo[] userInfos;
+
+        /// <summary>
+        /// Variable de clase creada por nosotros, ver Puzzle.cs para ver lo que hace la clase, se encarga de partir la imagen del puzzle y controlar los rectangulos de la clase RectImagen.
+		/// </summary>
         private Puzzle puzzle;
 
         /// <summary>
@@ -134,10 +135,8 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         public MainWindow()
         {
 			/// <summary>
-			/// Inicializamos los componentes, tanto los de la interfaz gráfica como los del movimiento a realizar.
+			/// Inicializamos los componentes, tanto los de la interfaz gráfica como los del Puzzle.
 			/// </summary>
-            movimientos = new Mov(this);
-            Rec = new RectImagen(0,0);
             InitializeComponent();
             puzzle = new Puzzle(@"C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\img1.jpg");
             
@@ -232,11 +231,12 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 // Set the image we display to point to the bitmap where we'll put the image data
                 this.Image.Source = this.imageSource;
                 
+                //Iniciamos el evento para que pueda detectar el abrir y cerrar de las manos.
                 this.interactionStream = new InteractionStream(sensor, new DummyInteractionClient());
+
+                //Añadimos un manejador de eventos que se llamará cuando detecte un nuevo InteractionStream.
                 this.interactionStream.InteractionFrameReady += InteractionStreamOnInteractionFrameReady;
                 
-                
-
                 // Add an event handler to be called whenever there is new depth frame data
                 this.sensor.DepthFrameReady += this.SensorDepthFrameReady;
                 // Add an event handler to be called whenever there is new color frame data
@@ -245,7 +245,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 // Add an event handler to be called whenever there is new color frame data
                 this.sensor.SkeletonFrameReady += this.SensorSkeletonFrameReady;
 
+                //Asignamos al puzzle el sensor que está activo.
                 this.puzzle.asignarSensor(this.sensor);
+
                 // Start the sensor!
                 try
                 {
@@ -311,10 +313,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
             using (SkeletonFrame skeletonFrame = e.OpenSkeletonFrame())
             {
-
+                //Bloque usado por InteractionStream
                 if (skeletonFrame != null)
                 {
-                    
+                    //se hace una copia del esqueleto se asigna la lectura del accelerometro y procesa interactionstream el esqueleto usando lo anterior.
                     skeletons = new Skeleton[skeletonFrame.SkeletonArrayLength];
                     skeletonFrame.CopySkeletonDataTo(skeletons);
                     Vector4 accelerometerReading = sensor.AccelerometerGetCurrentReading();
@@ -324,11 +326,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
             using (DrawingContext dc = this.drawingGroup.Open())
             {
-                // Dibuja lo que contenga colorBitmap con el tamaño especificado
-                //dc.DrawRectangle(Brushes.White, null, new Rect(0.0, 0.0, RenderWidth, RenderHeight));
+                //Dibuja los rectángulos que no están cogidos.
                 puzzle.DrawPuzzle(dc);
-                //dc.DrawImage(this.colorBitmap, new Rect(0.0, 0.0, RenderWidth, RenderHeight));
-                
+
                 //Comprobamos que kinect nos haya leido el esqueleto
                 if (skeletons.Length != 0)
                 {
@@ -341,26 +341,16 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 						//Si detecta los puntos de las articulaciones entra en este bloque.
                         if (skel.TrackingState == SkeletonTrackingState.Tracked)
                         {
-
+                            //Actualizamos el esqueleto del puzzle
                             puzzle.actualizarSkeleto(skel);
+
+                            //Dibujamos la pieza que esté cogida.
                             puzzle.DrawPuzzleCogidos( dc);
 
                             //Dibujamos los puntos de las manos.
-                            //this.DrawBonesAndJoints(skel, dc);
                             dc.DrawEllipse(null, trackedBonePen2, this.SkeletonPointToScreen(skel.Joints[JointType.HandLeft].Position), JointThickness, JointThickness);
                             dc.DrawEllipse(null, trackedBonePen1, this.SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position), JointThickness, JointThickness);
 
-                        }
-						// Si no detecta las articulaciones y sólo detecta la posicion entra en este bloque.
-                        else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
-                        {
-							// Pinta sólo el centro del esqueleto.
-                            dc.DrawEllipse(
-                            this.centerPointBrush,
-                            null,
-                            this.SkeletonPointToScreen(skel.Position),
-                            BodyCenterThickness,
-                            BodyCenterThickness);
                         }
                     }
                 }
@@ -369,10 +359,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 this.drawingGroup.ClipGeometry = new RectangleGeometry(new Rect(0.0, 0.0, RenderWidth, RenderHeight));
             }
         }
-		
-		
-		
-		
 
         /// <summary>
         /// Draws a skeleton's bones and joints
@@ -493,7 +479,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 {
                     // Copy the pixel data from the image to a temporary array
                     depthFrame.CopyDepthImagePixelDataTo(this.depthPixels);
+
+                    // Le pasamos los datos de profundidad a InteractionStream.
                     interactionStream.ProcessDepth(depthFrame.GetRawPixelData(), depthFrame.Timestamp);
+
                     // Get the min and max reliable depth for the current frame
                     int minDepth = depthFrame.MinDepth;
                     int maxDepth = depthFrame.MaxDepth;
@@ -529,30 +518,18 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                         // If we were outputting BGRA, we would write alpha here.
                         ++colorPixelIndex;
                     }
-
-                    // Write the pixel data into our bitmap
-                    /*this.colorBitmap.WritePixels(
-                        new Int32Rect(0, 0, this.colorBitmap.PixelWidth, this.colorBitmap.PixelHeight),
-                        this.colorPixels,
-                        this.colorBitmap.PixelWidth * sizeof(int),
-                        0);*/
                 }
             }
         }
-
         
-        /// <summary>
-        /// Evento para controlar el margen que queremos para hacer el movimiento más o menos preciso que el que hemos puesto por defecto.
+
+         /// <summary>
+        /// Manejador de eventos para el evento del sensor de kinect InteractionStream
         /// </summary>
-        private void mError_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            movimientos.setMargenError(0.01F * ((float)(mError.Value)));
-        }
-
-        
+        /// <param name="sender">object sending the event</param>
+        /// <param name="e">event arguments</param>
         private void InteractionStreamOnInteractionFrameReady(object sender, InteractionFrameReadyEventArgs e)
         {
-            
             using (InteractionFrame frame = e.OpenInteractionFrame())
             {
                 if (frame != null)
@@ -561,7 +538,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                     {
                         this.userInfos = new UserInfo[InteractionFrame.UserInfoArrayLength];
                     }
-
+                    //Copiamos los datos de interacción.
                     frame.CopyInteractionDataTo(this.userInfos);
                 }
                 else
@@ -570,19 +547,22 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 }
             }
 
-
-
             foreach (UserInfo userInfo in this.userInfos)
             {
                 foreach (InteractionHandPointer handPointer in userInfo.HandPointers)
                 {
+                    //Inicializamos la acción que realizará.
                     string action = null;
+
+                    //Comprobamos cual es la acción y asignamos la acción que realice el evento de la mano.
                     switch (handPointer.HandEventType)
                     {
+                        //Si cerramos la mano asignamos gripped a la acción
                         case InteractionHandEventType.Grip:
                             action = "gripped";
                             break;
 
+                        //Si abrimos la mano asinamos released a la acción
                         case InteractionHandEventType.GripRelease:
                             action = "released";
 
@@ -591,8 +571,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
                     if (action != null)
                     {
+                        //Iniciamos que mano es la que está realizando la acción a desconocida.
                         string handSide = "unknown";
 
+                        //Comprobamos que mano es la que realiza la acción y asignamos left o right dependiendo de que mano es.
                         switch (handPointer.HandType)
                         {
                             case InteractionHandType.Left:
@@ -604,6 +586,11 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                                 break;
                         }
 
+                        // Dependiendo de la mano hará una acción u otra al abrir y cerrar,
+                        // en nuestro caso son las mismas acciones para ambas manos pero dibujará un puño cerrado o abierto dependiendo de que mano esté realizando la acción.
+                        //Si la acción es released llamaremos a la función soltar de la clase Puzzle.cs 
+                        //Si es coger llamará a la función coger de la clase Puzzle.cs
+                        //Ver Puzzle.cs para saber lo que hacen.
                         if (handSide == "left")
                         {
                             if (action == "released")
@@ -636,9 +623,11 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         }
     }
 
+    /// <summary>
+    /// Clase que usa InteractionStream para funcionar como cliente de interacción dando información a InteractionStream.
+    /// </summary>
     public class DummyInteractionClient : IInteractionClient
     {
-
         public InteractionInfo GetInteractionInfoAtLocation(
             int skeletonTrackingId,
             InteractionHandType handType,
@@ -653,19 +642,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             result.PressTargetControlId = 1;
 
             return result;
-        }
-    }
-    //La clase de cuenta final de la interfaz interactiva  
-    public class InteractionClient : IInteractionClient
-    {
-        //Lograr la interacción de objetos  
-        public InteractionInfo GetInteractionInfoAtLocation(int skeletonTrackingId, InteractionHandType handType, double x, double y)
-        {
-            return new InteractionInfo
-            {
-                IsPressTarget = true,
-                IsGripTarget = true,
-            };
         }
     }
 }
