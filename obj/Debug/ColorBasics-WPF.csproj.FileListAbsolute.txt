@@ -44,3 +44,18 @@ C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\obj\Debug\ColorBasics-WPF.g
 C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\obj\Debug\Microsoft.Samples.Kinect.ColorBasics.Properties.Resources.resources
 C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\obj\Debug\ColorBasics-WPF.csproj.GenerateResource.Cache
 C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\obj\Debug\ColorBasics-WPF_Content.g.cs
+C:\Users\josea\Desktop\Facultad\NPI\Practica 2\Practica2-Kinect-NPI\obj\Debug\ColorBasics-WPF.csprojResolveAssemblyReference.cache
+C:\Users\josea\Desktop\Facultad\NPI\Practica 2\Practica2-Kinect-NPI\obj\Debug\MainWindow.baml
+C:\Users\josea\Desktop\Facultad\NPI\Practica 2\Practica2-Kinect-NPI\obj\Debug\MainWindow.g.cs
+C:\Users\josea\Desktop\Facultad\NPI\Practica 2\Practica2-Kinect-NPI\obj\Debug\App.g.cs
+C:\Users\josea\Desktop\Facultad\NPI\Practica 2\Practica2-Kinect-NPI\obj\Debug\ColorBasics-WPF_Content.g.cs
+C:\Users\josea\Desktop\Facultad\NPI\Practica 2\Practica2-Kinect-NPI\obj\Debug\ColorBasics-WPF_MarkupCompile.cache
+C:\Users\josea\Desktop\Facultad\NPI\Practica 2\Practica2-Kinect-NPI\obj\Debug\ColorBasics-WPF.g.resources
+C:\Users\josea\Desktop\Facultad\NPI\Practica 2\Practica2-Kinect-NPI\obj\Debug\Microsoft.Samples.Kinect.ColorBasics.Properties.Resources.resources
+C:\Users\josea\Desktop\Facultad\NPI\Practica 2\Practica2-Kinect-NPI\obj\Debug\ColorBasics-WPF.csproj.GenerateResource.Cache
+C:\Users\josea\Desktop\Facultad\NPI\Practica 2\Practica2-Kinect-NPI\obj\Debug\ColorBasics-WPF.exe
+C:\Users\josea\Desktop\Facultad\NPI\Practica 2\Practica2-Kinect-NPI\obj\Debug\ColorBasics-WPF.pdb
+C:\Users\josea\Desktop\Facultad\NPI\Practica 2\Practica2-Kinect-NPI\bin\Debug\ColorBasics-WPF.exe
+C:\Users\josea\Desktop\Facultad\NPI\Practica 2\Practica2-Kinect-NPI\bin\Debug\ColorBasics-WPF.pdb
+C:\Users\josea\Desktop\Facultad\NPI\Practica 2\Practica2-Kinect-NPI\bin\Debug\Microsoft.Kinect.dll
+C:\Users\josea\Desktop\Facultad\NPI\Practica 2\Practica2-Kinect-NPI\bin\Debug\Microsoft.Kinect.xml
