@@ -9,8 +9,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
     using System;
     using System.Windows.Media;
     using Microsoft.Kinect;
-
-    using System.Collections;
+    
     using System.Drawing;
     using System.Windows.Media.Imaging;
     using System.IO;
@@ -110,7 +109,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 int n = a.Next(0, piezas_height * piezas_width);
 
                 while (pos[n] != -1) {
-                    n=(n+1)% piezas_height * piezas_width;
+                    n=(n+1)% (piezas_height * piezas_width);
                 }
 
                 pos[n] = i;
@@ -124,8 +123,8 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 //Codigo para cortar las imagenes.
                 imagenes[i] = new Bitmap(imagen.Size.Width/ piezas_width, imagen.Size.Height/ piezas_height);
                 var gra = Graphics.FromImage(imagenes[i]);
-                int ipos = pos[i] / piezas_width;
-                int jpos = pos[i]% piezas_width;
+                int ipos = pos[i] % piezas_width;
+                int jpos = pos[i]/ piezas_width;
                 gra.DrawImage(imagen, new Rectangle(0, 0, imagen.Size.Width / piezas_width, imagen.Size.Height / piezas_height), 
                     new Rectangle(ipos* imagen.Size.Width /piezas_width, jpos* imagen.Size.Height / piezas_height, imagen.Size.Width / piezas_width, imagen.Size.Height / piezas_height),
                     GraphicsUnit.Pixel);
@@ -141,10 +140,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 bi.EndInit();
                 
                 //Asignamos a cada rectángulo la imagen transformada en la posición aleatoria.
-                int i_rec = i / piezas_width;
-                int j_rec = i % piezas_width;
+                int i_rec = i % piezas_width;
+                int j_rec = i / piezas_width;
 
-                rect[i] = new RectImagen(i_rec * width / piezas_width, j_rec * height / piezas_height, width / piezas_width, height / piezas_width, bi);
+                rect[i] = new RectImagen(i_rec * width / piezas_width, j_rec * height / piezas_height, width / piezas_width, height / piezas_height, bi);
                 rect[i].setPosicionOld(rect[i].getPosicion());
 
             }
@@ -190,7 +189,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
                 while (pos[n] != -1)
                 {
-                    n = (n + 1) % piezas_height * piezas_width;
+                    n = (n + 1) % (piezas_height * piezas_width);
                 }
 
                 pos[n] = i;
@@ -200,8 +199,8 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             {
                 imagenes[i] = new Bitmap(imagen.Size.Width / piezas_width, imagen.Size.Height / piezas_height);
                 var gra = Graphics.FromImage(imagenes[i]);
-                int ipos = pos[i] / piezas_width;
-                int jpos = pos[i] % piezas_width;
+                int ipos = pos[i] % piezas_width;
+                int jpos = pos[i] / piezas_width;
                 gra.DrawImage(imagen, new Rectangle(0, 0, imagen.Size.Width / piezas_width, imagen.Size.Height / piezas_height),
                     new Rectangle(ipos * imagen.Size.Width / piezas_width, jpos * imagen.Size.Height / piezas_height, imagen.Size.Width / piezas_width, imagen.Size.Height / piezas_height),
                     GraphicsUnit.Pixel);
@@ -215,10 +214,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 bi.StreamSource = ms;
                 bi.EndInit();
 
-                int i_rec = i / piezas_width;
-                int j_rec = i % piezas_width;
+                int i_rec = i % piezas_width;
+                int j_rec = i / piezas_width;
 
-                rect[i] = new RectImagen(i_rec * width / piezas_width, j_rec * height / piezas_height, width / piezas_width, height / piezas_width, bi);
+                rect[i] = new RectImagen(i_rec * width / piezas_width, j_rec * height / piezas_height, width / piezas_width, height / piezas_height, bi);
                 rect[i].setPosicionOld(rect[i].getPosicion());
 
             }

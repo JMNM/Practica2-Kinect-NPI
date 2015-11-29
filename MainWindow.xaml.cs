@@ -16,14 +16,12 @@
 //correspondientes al de imagen a color: ColorBasics-WPF y el que detecta el esqueleto: SkeletonBasics-WPF. 
 namespace Microsoft.Samples.Kinect.ColorBasics
 {
-    using System;
-    using System.Globalization;
+    
     using System.IO;
     using System.Windows;
     using System.Windows.Media;
     using System.Windows.Media.Imaging;
     using Microsoft.Kinect;
-    using Microsoft.Kinect.Toolkit;
     using Microsoft.Kinect.Toolkit.Interaction;
 
 
@@ -335,7 +333,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 					// Coge cada esqueleto de cada frame para manejarlo dentro.
                     foreach (Skeleton skel in skeletons)
                     {
-                        RenderClippedEdges(skel, dc);
+                        //RenderClippedEdges(skel, dc);
 
 						//Asignamos al esqueleto de este frame el estado del rastreo del esqueleto
 						//Si detecta los puntos de las articulaciones entra en este bloque.

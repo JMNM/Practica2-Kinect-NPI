@@ -8,7 +8,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 {
     using System;
     using System.Windows.Media;
-    using Microsoft.Kinect;
     using System.Windows.Media.Imaging;
     using System.Drawing;
 
@@ -168,8 +167,8 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             }
             //Comprobamos que la mano izquierda está en sobre el rectángulo,
            //si lo está y no hay cogido ningún otro rectángulo y la mano que pasamos es la izquierda se coge el rectángulo.
-            else if (mi2d.X >= pos.X - ancho / 2 && mi2d.X <= pos.X + ancho / 2
-                && mi2d.Y <= pos.Y + alto / 2 && mi2d.Y >= pos.Y - alto / 2 &&
+            else if (mi2d.X >= pos.X  && mi2d.X <= pos.X + ancho
+                && mi2d.Y <= pos.Y + alto  && mi2d.Y >= pos.Y &&
                     !cogidoD && !cogidoI && mano =="left")
             {
                 cogidoI = true;
