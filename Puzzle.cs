@@ -9,8 +9,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
     using System;
     using System.Windows.Media;
     using Microsoft.Kinect;
-
-    using System.Collections;
+    
     using System.Drawing;
     using System.Windows.Media.Imaging;
     using System.IO;
@@ -70,12 +69,18 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         /// <summary>
         ///  Número de rectangulos que habrá de alto
         /// </summary>
-        private int piezas_height; 
-        
+        private int piezas_height;
+
+        private int tiempo;
+        private int tiempo_actual;
+        private int tiempo_fin=-1;
+        private bool fin = false;
+        private int puntuacion;
+
         /// <summary>
         /// Constructor de la clase Puzzle.
         /// </summary>
-         /// <param name="im"> Nombre de la imagen que leeremos para después cortarla. </param>
+        /// <param name="im"> Nombre de la imagen que leeremos para después cortarla. </param>
         public Puzzle(String im) {
             //Comprobamos que se lee correctamente la imagen.
             try {
@@ -91,6 +96,8 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             height = 480;
             piezas_width = 4;
             piezas_height = 3;
+            tiempo = 12;// piezas_height * piezas_width * 8;
+            
 
             //Declaramos imagenes,pos y rect con el tamaño total de imágenes cuando se corten. 
             pos = new int[piezas_height * piezas_width];
@@ -110,7 +117,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 int n = a.Next(0, piezas_height * piezas_width);
 
                 while (pos[n] != -1) {
-                    n=(n+1)% piezas_height * piezas_width;
+                    n=(n+1)% (piezas_height * piezas_width);
                 }
 
                 pos[n] = i;
@@ -124,8 +131,8 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 //Codigo para cortar las imagenes.
                 imagenes[i] = new Bitmap(imagen.Size.Width/ piezas_width, imagen.Size.Height/ piezas_height);
                 var gra = Graphics.FromImage(imagenes[i]);
-                int ipos = pos[i] / piezas_width;
-                int jpos = pos[i]% piezas_width;
+                int ipos = i % piezas_width;
+                int jpos = i/ piezas_width;
                 gra.DrawImage(imagen, new Rectangle(0, 0, imagen.Size.Width / piezas_width, imagen.Size.Height / piezas_height), 
                     new Rectangle(ipos* imagen.Size.Width /piezas_width, jpos* imagen.Size.Height / piezas_height, imagen.Size.Width / piezas_width, imagen.Size.Height / piezas_height),
                     GraphicsUnit.Pixel);
@@ -141,10 +148,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 bi.EndInit();
                 
                 //Asignamos a cada rectángulo la imagen transformada en la posición aleatoria.
-                int i_rec = i / piezas_width;
-                int j_rec = i % piezas_width;
+                int i_rec = pos[i] % piezas_width;
+                int j_rec = pos[i] / piezas_width;
 
-                rect[i] = new RectImagen(i_rec * width / piezas_width, j_rec * height / piezas_height, width / piezas_width, height / piezas_width, bi);
+                rect[i] = new RectImagen(i_rec * width / piezas_width, j_rec * height / piezas_height, width / piezas_width, height / piezas_height, bi);
                 rect[i].setPosicionOld(rect[i].getPosicion());
 
             }
@@ -173,6 +180,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             height = h;
             piezas_width = p_w;
             piezas_height = p_h;
+            tiempo = piezas_height * piezas_width * 10;
 
             pos = new int[piezas_height * piezas_width];
             rect = new RectImagen[piezas_height * piezas_width];
@@ -190,7 +198,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
                 while (pos[n] != -1)
                 {
-                    n = (n + 1) % piezas_height * piezas_width;
+                    n = (n + 1) % (piezas_height * piezas_width);
                 }
 
                 pos[n] = i;
@@ -200,8 +208,8 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             {
                 imagenes[i] = new Bitmap(imagen.Size.Width / piezas_width, imagen.Size.Height / piezas_height);
                 var gra = Graphics.FromImage(imagenes[i]);
-                int ipos = pos[i] / piezas_width;
-                int jpos = pos[i] % piezas_width;
+                int ipos = i % piezas_width;
+                int jpos = i / piezas_width;
                 gra.DrawImage(imagen, new Rectangle(0, 0, imagen.Size.Width / piezas_width, imagen.Size.Height / piezas_height),
                     new Rectangle(ipos * imagen.Size.Width / piezas_width, jpos * imagen.Size.Height / piezas_height, imagen.Size.Width / piezas_width, imagen.Size.Height / piezas_height),
                     GraphicsUnit.Pixel);
@@ -215,10 +223,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 bi.StreamSource = ms;
                 bi.EndInit();
 
-                int i_rec = i / piezas_width;
-                int j_rec = i % piezas_width;
+                int i_rec = pos[i] % piezas_width;
+                int j_rec = pos[i] / piezas_width;
 
-                rect[i] = new RectImagen(i_rec * width / piezas_width, j_rec * height / piezas_height, width / piezas_width, height / piezas_width, bi);
+                rect[i] = new RectImagen(i_rec * width / piezas_width, j_rec * height / piezas_height, width / piezas_width, height / piezas_height, bi);
                 rect[i].setPosicionOld(rect[i].getPosicion());
 
             }
@@ -239,6 +247,22 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         public void asignarSensor(KinectSensor s) { 
             sensor = s; 
         }
+        public void iniciarTiempo() {
+            tiempo_actual = DateTime.Now.Day*24*3600 + DateTime.Now.Hour*3600 + DateTime.Now.Minute*60 + DateTime.Now.Second;
+            tiempo_fin = tiempo_actual + tiempo;
+        }
+        public void actualizarTiempo() {
+            tiempo_actual = DateTime.Now.Day * 24 * 3600 + DateTime.Now.Hour * 3600 + DateTime.Now.Minute * 60 + DateTime.Now.Second;
+
+        }
+        public int getTiempo() {
+            if (tiempo_fin - tiempo_actual > 0)
+                return tiempo_fin - tiempo_actual;
+            else
+                return 0;
+        }
+        public bool getFin() { return fin; }
+        public int getPuntuacion() { return puntuacion; }
                
         /// <summary>
         /// Función para dibujar el puzzle inicial y las piezas del puzzle que no estén cogidas.
@@ -251,6 +275,20 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 //Llamamos a la función dibujar de todos los rectángulos que no estén cogidos.
                 if(!rect[i].getCogido())
                     rect[i].dibujar(dc);
+            }
+            actualizarTiempo();
+            if (tiempo_actual > tiempo_fin&& tiempo_fin!=-1)
+            {
+                
+                fin = true;
+                puntuacion = 0;
+                for(int i = 0; i < piezas_height * piezas_width; i++)
+                {
+                    if (pos[i] == i)
+                        puntuacion += 1;
+                }
+                puntuacion =(int)((puntuacion * 100.0)/((piezas_height* piezas_width*1.0)));
+
             }
         }
         
@@ -275,8 +313,12 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         /// </summary>
         /// <param name="mano"> Mano con la que se cogerá la pieza. </param>
         public void coger(String mano) {
-            for (int i = 0; i < piezas_height * piezas_width; i++) {
-                rect[i].coger(mano,SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position), SkeletonPointToScreen(skel.Joints[JointType.HandLeft].Position));
+            if (getTiempo() > 0)
+            {
+                for (int i = 0; i < piezas_height * piezas_width; i++)
+                {
+                    rect[i].coger(mano, SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position), SkeletonPointToScreen(skel.Joints[JointType.HandLeft].Position));
+                }
             }
         }
         
@@ -316,34 +358,39 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                                 rect[i].setPosicion(rect[rec_inter].getPosicionOld());
                                 rect[rec_inter].setPosicionOld(rect[rec_inter].getPosicion());
                                 rect[i].setPosicionOld(rect[i].getPosicion());
+                                int a = pos[i];
+                                pos[i] = pos[rec_inter];
+                                pos[rec_inter] = a;
                             }
                             //Si no la soltamos donde estaba originalmente
                             else 
                                 rect[i].soltar(mano);
                         }
                         //Se hace lo mismo con la mano derecha pero con el punto de la misma.
-                        else 
-                            if(mano=="right"){
-                                Point p = SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position);
-                                int rec_inter = -1;
+                        else if(mano=="right"){
+                            Point p = SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position);
+                            int rec_inter = -1;
 
-                                for (int j = 0; j < piezas_height * piezas_width; j++)
+                            for (int j = 0; j < piezas_height * piezas_width; j++)
+                            {
+                                if (!rect[j].getCogido() && rect[j].inRectImagen(p.X, p.Y))
                                 {
-                                    if (!rect[j].getCogido() && rect[j].inRectImagen(p.X, p.Y))
-                                    {
-                                        rec_inter = j;
-                                    }
+                                    rec_inter = j;
                                 }
+                            }
 
-                                if (rec_inter != -1 && i!=rec_inter)
-                                {
-                                    Point p_nuevo = rect[rec_inter].getPosicion();
-                                    rect[rec_inter].setPosicion(rect[i].getPosicionOld());
-                                    rect[i].soltar(mano);
-                                    rect[i].setPosicion(rect[rec_inter].getPosicionOld());
-                                    rect[rec_inter].setPosicionOld(rect[rec_inter].getPosicion());
-                                    rect[i].setPosicionOld(rect[i].getPosicion());
-                                }
+                            if (rec_inter != -1 && i!=rec_inter)
+                            {
+                                Point p_nuevo = rect[rec_inter].getPosicion();
+                                rect[rec_inter].setPosicion(rect[i].getPosicionOld());
+                                rect[i].soltar(mano);
+                                rect[i].setPosicion(rect[rec_inter].getPosicionOld());
+                                rect[rec_inter].setPosicionOld(rect[rec_inter].getPosicion());
+                                rect[i].setPosicionOld(rect[i].getPosicion());
+                                int a = pos[i];
+                                pos[i] = pos[rec_inter];
+                                pos[rec_inter] = a;
+                            }
                                 else 
                                     rect[i].soltar(mano);
                             }

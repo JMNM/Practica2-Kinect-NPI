@@ -16,15 +16,14 @@
 //correspondientes al de imagen a color: ColorBasics-WPF y el que detecta el esqueleto: SkeletonBasics-WPF. 
 namespace Microsoft.Samples.Kinect.ColorBasics
 {
-    using System;
-    using System.Globalization;
+
     using System.IO;
     using System.Windows;
     using System.Windows.Media;
     using System.Windows.Media.Imaging;
     using Microsoft.Kinect;
-    using Microsoft.Kinect.Toolkit;
     using Microsoft.Kinect.Toolkit.Interaction;
+    using System.Globalization;
 
 
 
@@ -129,16 +128,35 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 		/// </summary>
         private Puzzle puzzle;
 
+        private BitmapImage manoDerA;
+        private BitmapImage manoDerC;
+        private BitmapImage manoDer;
+
+        private BitmapImage manoIzqA;
+        private BitmapImage manoIzqC;
+        private BitmapImage manoIzq;
+        private BitmapImage tutorial;
+        private bool fin_tuto = false;
+
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
         public MainWindow()
         {
-			/// <summary>
-			/// Inicializamos los componentes, tanto los de la interfaz gráfica como los del Puzzle.
-			/// </summary>
+            puzzle = new Puzzle(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) +@"\Images\img1.jpg");
+            manoDerA = new BitmapImage(new System.Uri(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) + @"\Images\manoAbiertaDer.png"));
+            manoDerC= new BitmapImage(new System.Uri(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) + @"\Images\manoCerradaDer.png"));
+            manoDer = manoDerA;
+            manoIzqA = new BitmapImage(new System.Uri(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) + @"\Images\manoAbiertaIzq.png"));
+            manoIzqC = new BitmapImage(new System.Uri(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) + @"\Images\manoCerradaIzq.png"));
+            manoIzq = manoIzqA;
+            tutorial = new BitmapImage(new System.Uri(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) + @"\Images\tuto.png"));
+
+            /// <summary>
+            /// Inicializamos los componentes, tanto los de la interfaz gráfica como los del Puzzle.
+            /// </summary>
             InitializeComponent();
-            puzzle = new Puzzle(@"C:\Users\navar\Documents\GitHub\Practica2-Kinect-NPI\img1.jpg");
+            
             
         }
 
@@ -327,7 +345,12 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             using (DrawingContext dc = this.drawingGroup.Open())
             {
                 //Dibuja los rectángulos que no están cogidos.
+                
                 puzzle.DrawPuzzle(dc);
+                FormattedText t= new FormattedText(puzzle.getTiempo()+" s", CultureInfo.GetCultureInfo("es-es"), FlowDirection.LeftToRight, new Typeface("Verdana"),
+                                            24,
+                                            Brushes.Black);
+                dc.DrawText(t, new Point(570, 10));
 
                 //Comprobamos que kinect nos haya leido el esqueleto
                 if (skeletons.Length != 0)
@@ -335,21 +358,46 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 					// Coge cada esqueleto de cada frame para manejarlo dentro.
                     foreach (Skeleton skel in skeletons)
                     {
-                        RenderClippedEdges(skel, dc);
+                        //RenderClippedEdges(skel, dc);
 
 						//Asignamos al esqueleto de este frame el estado del rastreo del esqueleto
 						//Si detecta los puntos de las articulaciones entra en este bloque.
                         if (skel.TrackingState == SkeletonTrackingState.Tracked)
                         {
+
+                            if (!fin_tuto)
+                            {
+                                dc.DrawImage(tutorial, new Rect(0, 0, RenderWidth, RenderHeight));
+                                FormattedText ft = new FormattedText("Toque el\ncirculo para\nfin Tutorial", CultureInfo.GetCultureInfo("es-es"), FlowDirection.LeftToRight, new Typeface("Consola"),
+                                            14,
+                                            Brushes.Black);
+                                dc.DrawText(ft, new Point(550, 60));
+                                dc.DrawEllipse(Brushes.Red, null, new Point(600, 30), 30, 30);
+                                if (SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position).X > 560 &&
+                                    SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position).Y < 60)
+                                {
+                                    fin_tuto = true;
+                                    puzzle.iniciarTiempo();
+                                }
+                            }
+                            else
+                            {   //Dibujamos la pieza que esté cogida.
+                                puzzle.DrawPuzzleCogidos(dc);
+                            }
+                            if (puzzle.getFin())
+                            {
+                                FormattedText punt = new FormattedText("Puntuacion: "+puzzle.getPuntuacion()+"/100", CultureInfo.GetCultureInfo("es-es"), FlowDirection.LeftToRight, new Typeface("Verdana"),
+                                            24,
+                                            Brushes.Black);
+                                dc.DrawText(punt, new Point(240, 240));
+
+                            }
+
                             //Actualizamos el esqueleto del puzzle
                             puzzle.actualizarSkeleto(skel);
-
-                            //Dibujamos la pieza que esté cogida.
-                            puzzle.DrawPuzzleCogidos( dc);
-
-                            //Dibujamos los puntos de las manos.
-                            dc.DrawEllipse(null, trackedBonePen2, this.SkeletonPointToScreen(skel.Joints[JointType.HandLeft].Position), JointThickness, JointThickness);
-                            dc.DrawEllipse(null, trackedBonePen1, this.SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position), JointThickness, JointThickness);
+                            //Dibujamos las manos.
+                            dc.DrawImage(manoDer, new Rect(this.SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position).X- manoDer.Width/2, this.SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position).Y- manoDer.Height/2, manoDer.Width,manoDer.Height));
+                            dc.DrawImage(manoIzq, new Rect(this.SkeletonPointToScreen(skel.Joints[JointType.HandLeft].Position).X - manoIzq.Width/2, this.SkeletonPointToScreen(skel.Joints[JointType.HandLeft].Position).Y - manoIzq.Height/2, manoIzq.Width, manoIzq.Height));
 
                         }
                     }
@@ -596,12 +644,12 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                             if (action == "released")
                             {
                                 puzzle.soltar(handSide);
-                                trackedBonePen2.Brush = Brushes.Green;
+                                manoIzq = manoIzqA;
                             }
                             else
                             {
                                 puzzle.coger(handSide);
-                                trackedBonePen2.Brush = Brushes.Red;
+                                manoIzq = manoIzqC;
                             }
                         }
                         else
@@ -609,12 +657,12 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                             if (action == "released")
                             {
                                 puzzle.soltar(handSide);
-                                trackedBonePen1.Brush = Brushes.Blue;
+                                manoDer = manoDerA;
                             }
                             else
                             {
                                 puzzle.coger(handSide);
-                                trackedBonePen1.Brush = Brushes.Yellow;
+                                manoDer = manoDerC;
                             }
                         }
                     }
