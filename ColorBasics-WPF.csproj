@@ -116,20 +116,15 @@
   <ItemGroup>
     <Resource Include="Images\Kinect.ico" />
     <Resource Include="Images\Logo.png" />
-    <Resource Include="Images\SnapHover.png" />
-    <Resource Include="Images\SnapNormal.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\posini.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\mov1.png" />
-    <Resource Include="Images\mov2.png" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Images\manoAbiertaDer.png" />
+    <Resource Include="Images\manoCerradaDer.png" />
+    <Resource Include="Images\manoCerradaIzq.png" />
+    <Resource Include="Images\manoAbiertaIzq.png" />
     <Content Include="KinectInteraction180_32.dll" />
     <Content Include="KinectInteraction180_64.dll" />
   </ItemGroup>

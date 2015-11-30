@@ -60,14 +60,7 @@
             </StatusBarItem>
         </StatusBar>
 
-        <DockPanel HorizontalAlignment="Left" LastChildFill="False" Grid.RowSpan="3" VerticalAlignment="Stretch" Width="142" Grid.Row="1" Margin="0,0,0,190">
-            <Image x:Name="pi1" Source="Images\posini.png" Stretch="None" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20,-110,0,5" Visibility="Hidden" Width="98"/>
-            <Image x:Name="mov1" Source="Images\mov1.png" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-100,-10,0,5" Visibility="Hidden" Width="138"/>
-            <Image x:Name="mov2" Source="Images\mov2.png" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-140,-110,0,5" Visibility="Hidden" Width="138"/>
-            <TextBlock x:Name="textoAyuda" DockPanel.Dock="Left" Margin="-100 0 -1 0" VerticalAlignment="Top" HorizontalAlignment="Left" Foreground="{StaticResource MediumGreyBrush}" FontFamily="Segoe UI" FontSize="18" Width="150" RenderTransformOrigin="-0.34,5.5"><Run Text=""/></TextBlock>
-        </DockPanel>
-        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Height="37" Margin="10,3,0,0" Grid.Row="4" TextWrapping="Wrap" VerticalAlignment="Top" Width="217"><Run Text="Margen de error"/><Run Text=" (m):"/><LineBreak/><Run Text="0.05&#x9;&#x9;0.15&#x9;&#x9;0.25&#x9;"/></TextBlock>
-
-
+        
+        
     </Grid>
 </Window>
