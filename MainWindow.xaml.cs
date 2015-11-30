@@ -517,10 +517,11 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 }
             }
         }
-        
+
         /// <summary>
         /// Manejador de eventos para el evento del sensor de kinect InteractionStream sacado y adaptado de:
         /// http://dotneteers.net/blogs/vbandi/archive/2013/05/03/kinect-interactions-with-wpf-part-iii-demystifying-the-interaction-stream.aspx
+        /// y https://msdn.microsoft.com/es-es/library/system.windows.media.formattedtext(v=vs.110).aspx
         /// </summary>
         /// <param name="sender">object sending the event</param>
         /// <param name="e">event arguments</param>

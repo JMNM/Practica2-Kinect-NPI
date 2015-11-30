@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Microsoft.Samples.Kinect.ColorBasics.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="Color Basics" Height="769" Width="851" Loaded="WindowLoaded" Closing="WindowClosing">
+    Title="Práctica 2" Height="689.5" Width="795.5" Loaded="WindowLoaded" Closing="WindowClosing">
 
 
     <Window.Resources>
@@ -38,29 +38,28 @@
         </Style>
     </Window.Resources>
 
-    <Grid Name="layoutGrid" Margin="10,0,10,-21">
+    <Grid Name="layoutGrid" Margin="0,0,10,-21">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" MinHeight="68"/>
-            <RowDefinition Height="73*"/>
-            <RowDefinition Height="271*"/>
-            <RowDefinition Height="253*"/>
+            <RowDefinition Height="98"/>
+            <RowDefinition Height="294*"/>
+            <RowDefinition Height="197*"/>
             <RowDefinition Height="Auto" MinHeight="66"/>
             <RowDefinition Height="25"/>
             <RowDefinition Height="0"/>
         </Grid.RowDefinitions>
-        <DockPanel Grid.Row="0" Margin="0 0 0 20">
-            <TextBlock DockPanel.Dock="Right" Margin="0 0 -1 0" VerticalAlignment="Bottom" Foreground="{StaticResource MediumGreyBrush}" FontFamily="Segoe UI" FontSize="18"><Run Text="Práctica "/><Run Text="2"/><LineBreak/><Run/><LineBreak/><Run/></TextBlock>
+        <DockPanel Grid.Row="0" Margin="0,26,0,40">
+            <TextBlock DockPanel.Dock="Right" Margin="0,0,-1,0" VerticalAlignment="Bottom" Foreground="{StaticResource MediumGreyBrush}" FontFamily="Segoe UI" FontSize="18" Height="34"><Run Text="Puzle"/><LineBreak/><Run/><LineBreak/><Run/></TextBlock>
         </DockPanel>
-        <Viewbox Grid.Row="1" Stretch="Uniform" HorizontalAlignment="Center" Grid.RowSpan="3" Margin="44,0,43,0" Width="736">
-            <Image Name="Image" Width="640" Height="520" RenderTransformOrigin="0.567,0.502"/>
+        <Viewbox Stretch="Uniform" HorizontalAlignment="Center" Grid.RowSpan="2" Margin="21,0" Width="736" Grid.Row="1">
+            <Image Name="Image" Width="732" Height="487" RenderTransformOrigin="0.567,0.502"/>
         </Viewbox>
-        <StatusBar Grid.Row="4" HorizontalAlignment="Stretch" Name="statusBar" VerticalAlignment="Bottom" Background="White" Foreground="{StaticResource MediumGreyBrush}" Height="26" Margin="248,0,137,0">
+        <StatusBar Grid.Row="3" HorizontalAlignment="Stretch" Name="statusBar" VerticalAlignment="Bottom" Background="White" Foreground="{StaticResource MediumGreyBrush}" Height="26" Margin="248,0,137,0">
             <StatusBarItem Padding="0 0 0 10" Width="312">
                 <TextBlock Name="statusBarText" Margin="-1 0 0 0"></TextBlock>
             </StatusBarItem>
         </StatusBar>
 
-        
-        
+
+
     </Grid>
 </Window>
