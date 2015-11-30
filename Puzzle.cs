@@ -70,11 +70,30 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         ///  Número de rectangulos que habrá de alto
         /// </summary>
         private int piezas_height;
-
+        
+        /// <summary>
+        ///  Tiempo que tiene el usuario para realizar el puzzle
+        /// </summary>
         private int tiempo;
+        
+        /// <summary>
+        /// Variable contadora para saber cuanto tiempo le queda al usuario para resolver el puzzle.
+        /// </summary>
         private int tiempo_actual;
+
+        /// <summary>
+        ///  Variable con el tiempo de finalización para saber cuanto le queda al usuario para resolver el puzzle.
+        /// </summary>
         private int tiempo_fin=-1;
+
+        /// <summary>
+        ///  Variable para saber si ha acabado el tiempo para resolver el puzzle.
+        /// </summary>
         private bool fin = false;
+
+        /// <summary>
+        ///  Variable con la puntuación de las piezas que están correctamente colocadas en su sitio.
+        /// </summary>
         private int puntuacion;
 
         /// <summary>
@@ -96,9 +115,8 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             height = 480;
             piezas_width = 4;
             piezas_height = 3;
-            tiempo = 12;// piezas_height * piezas_width * 8;
-            
-
+            tiempo = piezas_height * piezas_width * 8;
+           
             //Declaramos imagenes,pos y rect con el tamaño total de imágenes cuando se corten. 
             pos = new int[piezas_height * piezas_width];
             rect = new RectImagen[piezas_height * piezas_width];
@@ -128,7 +146,11 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             //Esta parte del código la sacamos de stackoverflow, tanto la parte de cortar las imagenes como la de transformarlas en algo que podemos mostrar.
             for(int i = 0; i < piezas_height * piezas_width; i++) {
 
-                //Codigo para cortar las imagenes.
+                //Codigo para cortar las imagenes sacado y adaptado de:
+                /////////////////////////////////////////////////////////////////////////////////////
+                //http://stackoverflow.com/questions/13625891/cut-an-image-into-9-pieces-c-sharp
+                /////////////////////////////////////////////////////////////////////////////////////
+
                 imagenes[i] = new Bitmap(imagen.Size.Width/ piezas_width, imagen.Size.Height/ piezas_height);
                 var gra = Graphics.FromImage(imagenes[i]);
                 int ipos = i % piezas_width;
@@ -138,7 +160,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                     GraphicsUnit.Pixel);
                 gra.Dispose();
 
-                //Código para transformar las imágenes a BitmapImage.
+                //Código para transformar las imágenes a BitmapImage sacado de:
+                /////////////////////////////////////////////////////////////////////////////////////
+                // http://joe-bq-wang.iteye.com/blog/1685024
+                /////////////////////////////////////////////////////////////////////////////////////
                 BitmapImage bi = new BitmapImage();
                 bi.BeginInit();
                 MemoryStream ms = new MemoryStream();
@@ -158,7 +183,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         }
         
         /// <summary>
-        /// Constructor de la clase puzzle, la diferencia con el anterior es que elegiremos cuantas filas y columnas queremos, el resto es igual que el constructor anterior.
+        /// Constructor de la clase puzzle, la diferencia con el anterior es que elegiremos cuantas filas y columnas queremos, el resto es igual que el constructor anterior por lo que no necesita comentarios extra.
         /// </summary>
         /// <param name="im"> Nombre de la imagen que leeremos para después cortarla </param>
         /// <param name="w"> Ancho que tendrá la imagen total en pantalla </param>
@@ -247,22 +272,46 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         public void asignarSensor(KinectSensor s) { 
             sensor = s; 
         }
+
+        /// <summary>
+        /// Función para iniciar el tiempo que tendrá el usuario para resolver el puzzle.
+        /// </summary>
         public void iniciarTiempo() {
             tiempo_actual = DateTime.Now.Day*24*3600 + DateTime.Now.Hour*3600 + DateTime.Now.Minute*60 + DateTime.Now.Second;
             tiempo_fin = tiempo_actual + tiempo;
         }
+
+        /// <summary>
+        /// Función para actualizar el tiempo actual.
+        /// </summary>
         public void actualizarTiempo() {
             tiempo_actual = DateTime.Now.Day * 24 * 3600 + DateTime.Now.Hour * 3600 + DateTime.Now.Minute * 60 + DateTime.Now.Second;
 
         }
+
+        /// <summary>
+        /// Función para obtener el tiempo que le queda al usuario, si llega a 0 se quedará en 0.
+        /// </summary>
         public int getTiempo() {
             if (tiempo_fin - tiempo_actual > 0)
                 return tiempo_fin - tiempo_actual;
             else
                 return 0;
         }
-        public bool getFin() { return fin; }
-        public int getPuntuacion() { return puntuacion; }
+
+        /// <summary>
+        /// Función para obtener si ha acabado o no el tiempo.
+        /// </summary>
+        public bool getFin() { 
+            return fin; 
+        }
+
+        /// <summary>
+        /// Función para obtener la puntuación.
+        /// </summary>
+        public int getPuntuacion() { 
+            return puntuacion; 
+        }
                
         /// <summary>
         /// Función para dibujar el puzzle inicial y las piezas del puzzle que no estén cogidas.
@@ -276,11 +325,17 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 if(!rect[i].getCogido())
                     rect[i].dibujar(dc);
             }
+
+            //Actualizamos el tiempo.
             actualizarTiempo();
+
+            //Comprobamos si el tiempo actual ha sobrepasado el final o si ha empezado la ejecución para resolver el puzzle.
             if (tiempo_actual > tiempo_fin&& tiempo_fin!=-1)
             {
-                
+                //Ponemos la variable que indica si ha terminado a true.
                 fin = true;
+                
+                //Calculamos la puntuación que ha obtenido el usuario.
                 puntuacion = 0;
                 for(int i = 0; i < piezas_height * piezas_width; i++)
                 {
@@ -288,7 +343,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                         puntuacion += 1;
                 }
                 puntuacion =(int)((puntuacion * 100.0)/((piezas_height* piezas_width*1.0)));
-
             }
         }
         
@@ -349,15 +403,17 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                             }
   
                             //Si está en la posición de otra pieza al soltar la pieza.
-                            //Intercambiamos la posición de las piezas.
                             if (rec_inter != -1 && i!= rec_inter)
                             {
+                                //Intercambiamos la posición de las piezas.
                                 Point p_nuevo = rect[rec_inter].getPosicion();
                                 rect[rec_inter].setPosicion(rect[i].getPosicionOld());
                                 rect[i].soltar(mano);
                                 rect[i].setPosicion(rect[rec_inter].getPosicionOld());
                                 rect[rec_inter].setPosicionOld(rect[rec_inter].getPosicion());
                                 rect[i].setPosicionOld(rect[i].getPosicion());
+                                
+                                //E intercambiamos la posición dentro del array de posiciones para luego calcular la puntuación de los que estén bien colocados.
                                 int a = pos[i];
                                 pos[i] = pos[rec_inter];
                                 pos[rec_inter] = a;
@@ -387,15 +443,16 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                                 rect[i].setPosicion(rect[rec_inter].getPosicionOld());
                                 rect[rec_inter].setPosicionOld(rect[rec_inter].getPosicion());
                                 rect[i].setPosicionOld(rect[i].getPosicion());
+                                
                                 int a = pos[i];
                                 pos[i] = pos[rec_inter];
                                 pos[rec_inter] = a;
                             }
-                                else 
-                                    rect[i].soltar(mano);
-                            }
+                            else 
+                                rect[i].soltar(mano);
+                        }
                     }
-            }
+             }
         }
 
         /// <summary>

@@ -8,12 +8,11 @@
 // Práctica realizada por:
 //	José Miguel Navarro Moreno
 //	José Antonio Larrubia García
-//
-
 
 
 //Usamos como base para la práctica los proyectos del kinect developer toolkit
-//correspondientes al de imagen a color: ColorBasics-WPF y el que detecta el esqueleto: SkeletonBasics-WPF. 
+//correspondientes al de imagen a color: ColorBasics-WPF y el que detecta el esqueleto: SkeletonBasics-WPF.
+//Además de código concreto sacado de webs que se especificará en su parte correspondiente. 
 namespace Microsoft.Samples.Kinect.ColorBasics
 {
 
@@ -24,8 +23,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
     using Microsoft.Kinect;
     using Microsoft.Kinect.Toolkit.Interaction;
     using System.Globalization;
-
-
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -128,14 +125,44 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 		/// </summary>
         private Puzzle puzzle;
 
+        /// <summary>
+        /// Imagen de la mano derecha abierta
+		/// </summary>
         private BitmapImage manoDerA;
+
+        /// <summary>
+        /// Imagen de la mano derecha cerrada
+		/// </summary>
         private BitmapImage manoDerC;
+
+        /// <summary>
+        /// Imagen de la mano derecha que se dibujará en cada momento.
+		/// </summary>
         private BitmapImage manoDer;
 
+        /// <summary>
+        /// Imagen de la mano izquierdaa abierta
+		/// </summary>
         private BitmapImage manoIzqA;
+
+        /// <summary>
+        /// Imagen de la mano izquierda cerrada
+		/// </summary>
         private BitmapImage manoIzqC;
+
+        /// <summary>
+        /// Imagen de la mano izquierda que se dibujará en cada momento.
+		/// </summary>
         private BitmapImage manoIzq;
+
+        /// <summary>
+        /// Imagen del tutorial.
+		/// </summary>
         private BitmapImage tutorial;
+
+        /// <summary>
+        /// Variable que indica si ha acabado el tutorial.
+		/// </summary>
         private bool fin_tuto = false;
 
         /// <summary>
@@ -143,6 +170,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         /// </summary>
         public MainWindow()
         {
+            //Leemos las imagenes de las manos, el puzzle y el tutorial.
             puzzle = new Puzzle(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) +@"\Images\img1.jpg");
             manoDerA = new BitmapImage(new System.Uri(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) + @"\Images\manoAbiertaDer.png"));
             manoDerC= new BitmapImage(new System.Uri(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) + @"\Images\manoCerradaDer.png"));
@@ -156,8 +184,6 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             /// Inicializamos los componentes, tanto los de la interfaz gráfica como los del Puzzle.
             /// </summary>
             InitializeComponent();
-            
-            
         }
 
         /// <summary>
@@ -231,13 +257,17 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             {
                 // Allocate space to put the depth pixels we'll receive
                 this.depthPixels = new DepthImagePixel[this.sensor.DepthStream.FramePixelDataLength];
+
                 // Turn on the skeleton stream to receive skeleton frames
                 sensor.SkeletonStream.Enable();
+
                 // Turn on the color stream to receive color frames
                 this.sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
+
                 // Turn on the depth stream to receive depth frames
                 this.sensor.DepthStream.Enable(DepthImageFormat.Resolution640x480Fps30);
 
+                //se actualiza la informacion del usuario que devuelva kinect.
                 this.userInfos = new UserInfo[InteractionFrame.UserInfoArrayLength];
 
                 // Allocate space to put the pixels we'll receive
@@ -257,6 +287,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 
                 // Add an event handler to be called whenever there is new depth frame data
                 this.sensor.DepthFrameReady += this.SensorDepthFrameReady;
+
                 // Add an event handler to be called whenever there is new color frame data
                 this.sensor.ColorFrameReady += this.SensorColorFrameReady;
 
@@ -334,9 +365,14 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 //Bloque usado por InteractionStream
                 if (skeletonFrame != null)
                 {
-                    //se hace una copia del esqueleto se asigna la lectura del accelerometro y procesa interactionstream el esqueleto usando lo anterior.
+                    //Se hace una copia del esqueleto se asigna la lectura del accelerometro y procesa interactionstream el esqueleto usando lo anterior.
                     skeletons = new Skeleton[skeletonFrame.SkeletonArrayLength];
                     skeletonFrame.CopySkeletonDataTo(skeletons);
+
+                    //Este bloque está sacado de:
+                    //////////////////////////////////////////////////////////////////////////////////////////////////
+                    //http://dotneteers.net/blogs/vbandi/archive/2013/05/03/kinect-interactions-with-wpf-part-iii-demystifying-the-interaction-stream.aspx
+                    //////////////////////////////////////////////////////////////////////////////////////////////////
                     Vector4 accelerometerReading = sensor.AccelerometerGetCurrentReading();
                     interactionStream.ProcessSkeleton(skeletons, accelerometerReading, skeletonFrame.Timestamp);
                 }
@@ -345,8 +381,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             using (DrawingContext dc = this.drawingGroup.Open())
             {
                 //Dibuja los rectángulos que no están cogidos.
-                
                 puzzle.DrawPuzzle(dc);
+
+                //Mostramos por pantalla el tiempo que nos queda.
                 FormattedText t= new FormattedText(puzzle.getTiempo()+" s", CultureInfo.GetCultureInfo("es-es"), FlowDirection.LeftToRight, new Typeface("Verdana"),
                                             24,
                                             Brushes.Black);
@@ -358,24 +395,26 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 					// Coge cada esqueleto de cada frame para manejarlo dentro.
                     foreach (Skeleton skel in skeletons)
                     {
-                        //RenderClippedEdges(skel, dc);
-
 						//Asignamos al esqueleto de este frame el estado del rastreo del esqueleto
 						//Si detecta los puntos de las articulaciones entra en este bloque.
                         if (skel.TrackingState == SkeletonTrackingState.Tracked)
                         {
-
+                            //Comprobamos si se ha acabado el tutorial.
                             if (!fin_tuto)
                             {
+                                //Si el tutorial no se ha acabado dibujamos la imagen del tutorial y pintamos un circulo rojo para que al tocarlo se acabe el tutorial
                                 dc.DrawImage(tutorial, new Rect(0, 0, RenderWidth, RenderHeight));
                                 FormattedText ft = new FormattedText("Toque el\ncirculo para\nfin Tutorial", CultureInfo.GetCultureInfo("es-es"), FlowDirection.LeftToRight, new Typeface("Consola"),
                                             14,
                                             Brushes.Black);
                                 dc.DrawText(ft, new Point(550, 60));
                                 dc.DrawEllipse(Brushes.Red, null, new Point(600, 30), 30, 30);
+
+                                //Si la mano toca el circulo.
                                 if (SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position).X > 560 &&
                                     SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position).Y < 60)
                                 {
+                                    //Ponemos a true el final del tutorial y empieza a contar el tiempo.
                                     fin_tuto = true;
                                     puzzle.iniciarTiempo();
                                 }
@@ -384,8 +423,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                             {   //Dibujamos la pieza que esté cogida.
                                 puzzle.DrawPuzzleCogidos(dc);
                             }
+
+                            //Si se ha acabado el tiempo para resolver el puzzle mostramos la puntuación.
                             if (puzzle.getFin())
-                            {
+                            { 
                                 FormattedText punt = new FormattedText("Puntuacion: "+puzzle.getPuntuacion()+"/100", CultureInfo.GetCultureInfo("es-es"), FlowDirection.LeftToRight, new Typeface("Verdana"),
                                             24,
                                             Brushes.Black);
@@ -395,73 +436,16 @@ namespace Microsoft.Samples.Kinect.ColorBasics
 
                             //Actualizamos el esqueleto del puzzle
                             puzzle.actualizarSkeleto(skel);
+
                             //Dibujamos las manos.
                             dc.DrawImage(manoDer, new Rect(this.SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position).X- manoDer.Width/2, this.SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position).Y- manoDer.Height/2, manoDer.Width,manoDer.Height));
                             dc.DrawImage(manoIzq, new Rect(this.SkeletonPointToScreen(skel.Joints[JointType.HandLeft].Position).X - manoIzq.Width/2, this.SkeletonPointToScreen(skel.Joints[JointType.HandLeft].Position).Y - manoIzq.Height/2, manoIzq.Width, manoIzq.Height));
-
                         }
                     }
                 }
 
                 // prevent drawing outside of our render area
                 this.drawingGroup.ClipGeometry = new RectangleGeometry(new Rect(0.0, 0.0, RenderWidth, RenderHeight));
-            }
-        }
-
-        /// <summary>
-        /// Draws a skeleton's bones and joints
-        /// </summary>
-        /// <param name="skeleton">skeleton to draw</param>
-        /// <param name="drawingContext">drawing context to draw to</param>
-        private void DrawBonesAndJoints(Skeleton skeleton, DrawingContext drawingContext)
-        {
-            // Render Torso
-            this.DrawBone(skeleton, drawingContext, JointType.Head, JointType.ShoulderCenter);
-            this.DrawBone(skeleton, drawingContext, JointType.ShoulderCenter, JointType.ShoulderLeft);
-            this.DrawBone(skeleton, drawingContext, JointType.ShoulderCenter, JointType.ShoulderRight);
-            this.DrawBone(skeleton, drawingContext, JointType.ShoulderCenter, JointType.Spine);
-            this.DrawBone(skeleton, drawingContext, JointType.Spine, JointType.HipCenter);
-            this.DrawBone(skeleton, drawingContext, JointType.HipCenter, JointType.HipLeft);
-            this.DrawBone(skeleton, drawingContext, JointType.HipCenter, JointType.HipRight);
-
-            // Left Arm
-            this.DrawBone(skeleton, drawingContext, JointType.ShoulderLeft, JointType.ElbowLeft);
-            this.DrawBone(skeleton, drawingContext, JointType.ElbowLeft, JointType.WristLeft);
-            this.DrawBone(skeleton, drawingContext, JointType.WristLeft, JointType.HandLeft);
-
-            // Right Arm
-            this.DrawBone(skeleton, drawingContext, JointType.ShoulderRight, JointType.ElbowRight);
-            this.DrawBone(skeleton, drawingContext, JointType.ElbowRight, JointType.WristRight);
-            this.DrawBone(skeleton, drawingContext, JointType.WristRight, JointType.HandRight);
-
-            // Left Leg
-            this.DrawBone(skeleton, drawingContext, JointType.HipLeft, JointType.KneeLeft);
-            this.DrawBone(skeleton, drawingContext, JointType.KneeLeft, JointType.AnkleLeft);
-            this.DrawBone(skeleton, drawingContext, JointType.AnkleLeft, JointType.FootLeft);
-
-            // Right Leg
-            this.DrawBone(skeleton, drawingContext, JointType.HipRight, JointType.KneeRight);
-            this.DrawBone(skeleton, drawingContext, JointType.KneeRight, JointType.AnkleRight);
-            this.DrawBone(skeleton, drawingContext, JointType.AnkleRight, JointType.FootRight);
-
-            // Render Joints
-            foreach (Joint joint in skeleton.Joints)
-            {
-                Brush drawBrush = null;
-
-                if (joint.TrackingState == JointTrackingState.Tracked)
-                {
-                    drawBrush = this.trackedJointBrush;
-                }
-                else if (joint.TrackingState == JointTrackingState.Inferred)
-                {
-                    drawBrush = this.inferredJointBrush;
-                }
-
-                if (drawBrush != null)
-                {
-                    drawingContext.DrawEllipse(drawBrush, null, this.SkeletonPointToScreen(joint.Position), JointThickness, JointThickness);
-                }
             }
         }
 
@@ -479,43 +463,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         }
 
         /// <summary>
-        /// Draws a bone line between two joints
-        /// </summary>
-        /// <param name="skeleton">skeleton to draw bones from</param>
-        /// <param name="drawingContext">drawing context to draw to</param>
-        /// <param name="jointType0">joint to start drawing from</param>
-        /// <param name="jointType1">joint to end drawing at</param>
-        private void DrawBone(Skeleton skeleton, DrawingContext drawingContext, JointType jointType0, JointType jointType1)
-        {
-            Joint joint0 = skeleton.Joints[jointType0];
-            Joint joint1 = skeleton.Joints[jointType1];
-
-            // If we can't find either of these joints, exit
-            if (joint0.TrackingState == JointTrackingState.NotTracked ||
-                joint1.TrackingState == JointTrackingState.NotTracked)
-            {
-                return;
-            }
-
-            // Don't draw if both points are inferred
-            if (joint0.TrackingState == JointTrackingState.Inferred &&
-                joint1.TrackingState == JointTrackingState.Inferred)
-            {
-                return;
-            }
-
-            // We assume all drawn bones are inferred unless BOTH joints are tracked
-            Pen drawPen = this.inferredBonePen;
-            if (joint0.TrackingState == JointTrackingState.Tracked && joint1.TrackingState == JointTrackingState.Tracked)
-            {
-                drawPen = this.trackedBonePen1;
-            }
-
-            drawingContext.DrawLine(drawPen, this.SkeletonPointToScreen(joint0.Position), this.SkeletonPointToScreen(joint1.Position));
-        }
-
-        /// <summary>
-        /// Event handler for Kinect sensor's DepthFrameReady event
+        /// Event handler for Kinect sensor's DepthFrameReady event sacado del proyecto de developer toolkit browser 1.8 depth basics-WPF 
         /// </summary>
         /// <param name="sender">object sending the event</param>
         /// <param name="e">event arguments</param>
@@ -570,9 +518,9 @@ namespace Microsoft.Samples.Kinect.ColorBasics
             }
         }
         
-
-         /// <summary>
-        /// Manejador de eventos para el evento del sensor de kinect InteractionStream
+        /// <summary>
+        /// Manejador de eventos para el evento del sensor de kinect InteractionStream sacado y adaptado de:
+        /// http://dotneteers.net/blogs/vbandi/archive/2013/05/03/kinect-interactions-with-wpf-part-iii-demystifying-the-interaction-stream.aspx
         /// </summary>
         /// <param name="sender">object sending the event</param>
         /// <param name="e">event arguments</param>
@@ -672,7 +620,8 @@ namespace Microsoft.Samples.Kinect.ColorBasics
     }
 
     /// <summary>
-    /// Clase que usa InteractionStream para funcionar como cliente de interacción dando información a InteractionStream.
+    /// Clase que usa InteractionStream para funcionar como cliente de interacción dando información a InteractionStream sacado de:
+    ///http://dotneteers.net/blogs/vbandi/archive/2013/05/03/kinect-interactions-with-wpf-part-iii-demystifying-the-interaction-stream.aspx
     /// </summary>
     public class DummyInteractionClient : IInteractionClient
     {
