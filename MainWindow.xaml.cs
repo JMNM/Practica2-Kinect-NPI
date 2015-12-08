@@ -171,7 +171,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
         public MainWindow()
         {
             //Leemos las imagenes de las manos, el puzzle y el tutorial.
-            puzzle = new Puzzle(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) +@"\Images\img1.jpg");
+            puzzle = new Puzzle(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) +@"\Images\img1.jpg",(int)RenderWidth,(int)RenderHeight,4,3);
             manoDerA = new BitmapImage(new System.Uri(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) + @"\Images\manoAbiertaDer.png"));
             manoDerC= new BitmapImage(new System.Uri(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) + @"\Images\manoCerradaDer.png"));
             manoDer = manoDerA;
@@ -387,7 +387,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 FormattedText t= new FormattedText(puzzle.getTiempo()+" s", CultureInfo.GetCultureInfo("es-es"), FlowDirection.LeftToRight, new Typeface("Verdana"),
                                             24,
                                             Brushes.Black);
-                dc.DrawText(t, new Point(570, 10));
+                dc.DrawText(t, new Point(RenderWidth-70, 10));
 
                 //Comprobamos que kinect nos haya leido el esqueleto
                 if (skeletons.Length != 0)
@@ -408,10 +408,10 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                                             14,
                                             Brushes.Black);
                                 dc.DrawText(ft, new Point(550, 60));
-                                dc.DrawEllipse(Brushes.Red, null, new Point(600, 30), 30, 30);
+                                dc.DrawEllipse(Brushes.Red, null, new Point(RenderWidth-40, 30), 30, 30);
 
                                 //Si la mano toca el circulo.
-                                if (SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position).X > 560 &&
+                                if (SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position).X > RenderWidth - 80 &&
                                     SkeletonPointToScreen(skel.Joints[JointType.HandRight].Position).Y < 60)
                                 {
                                     //Ponemos a true el final del tutorial y empieza a contar el tiempo.
@@ -540,7 +540,7 @@ namespace Microsoft.Samples.Kinect.ColorBasics
                 }
                 else
                 {
-                    return;
+                    //return;
                 }
             }
 
